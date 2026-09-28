@@ -40,6 +40,8 @@ function RootNavigator() {
       <Stack.Protected guard={user !== null && staff}>
         <Stack.Screen name="staff" />
       </Stack.Protected>
+      {/* Public: readable signed in or out. */}
+      <Stack.Screen name="docs" />
     </Stack>
   );
 }
