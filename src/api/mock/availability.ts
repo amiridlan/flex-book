@@ -17,12 +17,17 @@ function hash(text: string): number {
  * would from bookings + opening hours. Meeting rooms get hourly slots; hot desks
  * get one all-day slot with seats remaining; private offices are not bookable.
  */
+export type BookedRange = { readonly startsAt: string; readonly endsAt: string };
+
 export function buildAvailability(
   location: Location,
   space: Space,
   date: string,
   now: number,
+  booked: readonly BookedRange[] = [],
 ): Availability {
+  const overlaps = (start: number, end: number) =>
+    booked.some((b) => Date.parse(b.startsAt) < end && Date.parse(b.endsAt) > start);
   const base = { spaceId: space.id, date, timezone: location.timezone };
   const hours = location.openingHours[weekdayIndex(date)] ?? null;
 
@@ -35,7 +40,8 @@ export function buildAvailability(
 
   if (space.rate.unit === 'day') {
     // 4–12 open desks, stable per space and day.
-    const remaining = 4 + (hash(`${space.id}:${date}`) % 9);
+    const bookedToday = booked.filter((b) => b.startsAt === opens).length;
+    const remaining = Math.max(0, 4 + (hash(`${space.id}:${date}`) % 9) - bookedToday);
     const slot: Slot = {
       startsAt: opens,
       endsAt: closes,
@@ -52,7 +58,7 @@ export function buildAvailability(
     slots.push({
       startsAt,
       endsAt: new Date(start + 3_600_000).toISOString(),
-      available: !busy && start > now,
+      available: !busy && start > now && !overlaps(start, start + 3_600_000),
       remaining: null,
     });
   }

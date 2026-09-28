@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
 import type { HttpRequest, HttpResponse, HttpTransport } from '../client/transport';
+import { checkInSchema, createBookingSchema } from '../schemas/booking';
 import type { Location } from '../schemas/location';
 import type { User } from '../schemas/user';
 import { canSeeLocation } from './access';
 import { buildAvailability } from './availability';
+import { createBookingStore } from './booking-store';
 import { BRANDS } from './db/brands';
 import { COUNTRIES } from './db/countries';
 import { LOCATIONS } from './db/locations';
@@ -49,6 +51,9 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
   const now = options.now ?? Date.now;
   const sessions = new Map<string, string>(); // token -> user id
   const router = createRouter();
+  const bookings = createBookingStore(random, now);
+  const member = USERS.find((u) => u.role === 'member');
+  if (member) bookings.seed(member);
 
   function currentUser(request: HttpRequest): User | null {
     const header = request.headers?.Authorization ?? '';
@@ -79,14 +84,7 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
 
   router.on('POST', '/auth/login', ({ request }) => {
     const body = loginBodySchema.safeParse(request.body);
-    if (!body.success) {
-      const errors: Record<string, string[]> = {};
-      for (const issue of body.error.issues) {
-        const field = String(issue.path[0] ?? 'form');
-        (errors[field] ??= []).push(issue.message);
-      }
-      return validationError(errors);
-    }
+    if (!body.success) return validationError(fieldErrors(body.error.issues));
     const user = USERS.find((u) => u.email.toLowerCase() === body.data.email.toLowerCase());
     if (!user || body.data.password !== DEMO_PASSWORD) {
       return validationError({ email: ['These credentials do not match our records.'] });
@@ -164,7 +162,54 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       if (!query.success) {
         return validationError({ date: [query.error.issues[0]?.message ?? 'Invalid date.'] });
       }
-      return json(200, { data: buildAvailability(location, space, query.data.date, now()) });
+      return json(200, {
+        data: buildAvailability(location, space, query.data.date, now(), bookings.ranges(space.id)),
+      });
+    }),
+  );
+
+  router.on(
+    'POST',
+    '/bookings',
+    authed((user, request) => {
+      if (!user.permissions.includes('bookings.create')) {
+        return json(403, { message: 'This account cannot make bookings.' });
+      }
+      const body = createBookingSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      return bookings.create(user, body.data);
+    }),
+  );
+
+  router.on(
+    'GET',
+    '/bookings',
+    authed((user) => bookings.listFor(user)),
+  );
+
+  router.on(
+    'GET',
+    '/bookings/:id',
+    authed((user, _request, params) => bookings.get(user, params.id ?? '')),
+  );
+
+  router.on(
+    'PATCH',
+    '/bookings/:id',
+    authed((user, request, params) => {
+      const body = z.object({ status: z.literal('cancelled') }).safeParse(request.body);
+      if (!body.success) return validationError({ status: ['Only cancellation is supported.'] });
+      return bookings.cancel(user, params.id ?? '');
+    }),
+  );
+
+  router.on(
+    'POST',
+    '/bookings/:id/check-in',
+    authed((user, request, params) => {
+      const body = checkInSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      return bookings.checkIn(user, params.id ?? '', body.data.device);
     }),
   );
 
@@ -183,6 +228,16 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       return { status: response.status, body };
     },
   };
+}
+
+/** Zod issues -> Laravel-style `{ field: [messages] }`. */
+function fieldErrors(issues: readonly z.core.$ZodIssue[]): Record<string, string[]> {
+  const errors: Record<string, string[]> = {};
+  for (const issue of issues) {
+    const field = String(issue.path[0] ?? 'form');
+    (errors[field] ??= []).push(issue.message);
+  }
+  return errors;
 }
 
 function paginate(items: readonly Location[], page: number, perPage: number, path: string) {
