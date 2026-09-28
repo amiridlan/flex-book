@@ -29,7 +29,7 @@ export function SlotPicker({ slots, timeZone, selected, onSelect }: SlotPickerPr
               isSelected
                 ? 'border-primary bg-primary'
                 : slot.available
-                  ? 'border-border bg-surface active:bg-surface-muted'
+                  ? 'border-border bg-surface hover:border-primary/60 active:bg-surface-muted'
                   : 'border-surface-muted bg-surface-muted'
             }`}
           >
@@ -70,7 +70,9 @@ export function DayPassPicker({ slot, timeZone, selected, onSelect }: DayPassPic
       disabled={!slot.available}
       onPress={() => onSelect(slot)}
       className={`min-h-touch gap-1 rounded-2xl border p-4 ${
-        selected ? 'border-primary bg-primary-soft' : 'border-border bg-surface'
+        selected
+          ? 'border-primary bg-primary-soft'
+          : 'border-border bg-surface hover:border-primary/60'
       } ${slot.available ? '' : 'opacity-50'}`}
     >
       <Text className="text-base font-semibold text-text">Full day · {range}</Text>

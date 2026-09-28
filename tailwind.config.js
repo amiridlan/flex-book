@@ -31,6 +31,12 @@ module.exports = {
       danger: { DEFAULT: token('danger'), soft: token('danger-soft') },
       success: { DEFAULT: token('success'), soft: token('success-soft') },
       warning: { DEFAULT: token('warning'), soft: token('warning-soft') },
+      sidebar: {
+        DEFAULT: token('sidebar'),
+        active: token('sidebar-active'),
+        text: token('sidebar-text'),
+        muted: token('sidebar-muted'),
+      },
     },
     extend: {
       minHeight: { touch: '44px' },

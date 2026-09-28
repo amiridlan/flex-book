@@ -19,7 +19,7 @@ export function SpaceRow({ space, country, href }: SpaceRowProps) {
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={`${space.name}, ${priceLabel(space)}, ${capacityLabel(space)}`}
-        className="min-h-touch gap-1 rounded-2xl border border-border bg-surface p-4 active:bg-surface-muted"
+        className="min-h-touch gap-1 rounded-2xl border border-border bg-surface p-4 hover:border-primary/50 hover:shadow-sm active:bg-surface-muted"
       >
         <View className="flex-row items-start justify-between gap-3">
           <View className="flex-1 gap-1">

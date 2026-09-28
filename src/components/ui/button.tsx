@@ -17,9 +17,9 @@ type ButtonProps = {
 };
 
 const CONTAINER: Readonly<Record<ButtonVariant, string>> = {
-  primary: 'bg-primary active:opacity-80',
-  secondary: 'border border-border bg-surface active:bg-surface-muted',
-  ghost: 'active:bg-surface-muted',
+  primary: 'bg-primary hover:opacity-90 active:opacity-80',
+  secondary: 'border border-border bg-surface hover:bg-surface-muted active:bg-surface-muted',
+  ghost: 'hover:bg-surface-muted active:bg-surface-muted',
 };
 
 const LABEL: Readonly<Record<ButtonVariant, string>> = {

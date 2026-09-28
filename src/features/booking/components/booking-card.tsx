@@ -23,7 +23,7 @@ export function BookingCard({ booking, brand }: { booking: Booking; brand: Brand
         <Pressable
           accessibilityRole="link"
           accessibilityLabel={`${booking.space.name} at ${booking.location.name}, ${when}`}
-          className="gap-2 rounded-2xl border border-border bg-surface p-4 active:bg-surface-muted"
+          className="gap-2 rounded-2xl border border-border bg-surface p-4 hover:border-primary/50 active:bg-surface-muted"
         >
           <View className="flex-row items-center justify-between">
             <Badge label={brand?.name ?? booking.location.brandId} />

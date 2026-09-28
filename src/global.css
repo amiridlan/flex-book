@@ -26,4 +26,10 @@
   --color-success-soft: 220 252 231;
   --color-warning: 161 98 7;
   --color-warning-soft: 254 243 199;
+
+  /* Desktop app shell (dark sidebar). Text pairs pass WCAG AA on --color-sidebar. */
+  --color-sidebar: 15 23 42;
+  --color-sidebar-active: 30 41 59;
+  --color-sidebar-text: 226 232 240;
+  --color-sidebar-muted: 148 163 184;
 }

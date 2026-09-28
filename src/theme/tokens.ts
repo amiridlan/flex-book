@@ -20,6 +20,10 @@ export const colorTokens = {
   'success-soft': '220 252 231',
   warning: '161 98 7',
   'warning-soft': '254 243 199',
+  sidebar: '15 23 42',
+  'sidebar-active': '30 41 59',
+  'sidebar-text': '226 232 240',
+  'sidebar-muted': '148 163 184',
 } as const;
 
 export type ColorToken = keyof typeof colorTokens;
