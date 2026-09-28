@@ -5,9 +5,11 @@
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
     "@expo/vector-icons": "^15.0.2",
+    "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.104.0",
     "date-fns": "^4.4.0",
     "expo": "~57.0.25",
+    "expo-camera": "~57.0.5",
     "expo-constants": "~57.0.19",
     "expo-font": "~57.0.4",
     "expo-image": "~57.0.5",
@@ -23,6 +25,7 @@
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hook-form": "^7.89.0",
     "react-native": "0.86.3",
     "react-native-css-interop": "^0.2.7",
     "react-native-gesture-handler": "~2.32.0",
@@ -61,7 +64,8 @@
     "test": "jest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm test -- --ci"
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test -- --ci",
+    "openapi": "UPDATE_OPENAPI=1 jest src/api/__tests__/openapi.test.ts"
   },
   "private": true,
   "engines": {
@@ -75,7 +79,8 @@
       "/dist/"
     ],
     "moduleNameMapper": {
-      "\\.css$": "<rootDir>/jest/style-stub.js"
+      "\\.css$": "<rootDir>/jest/style-stub.js",
+      "^expo-camera$": "<rootDir>/jest/expo-camera-mock.js"
     }
   }
 }
