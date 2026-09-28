@@ -68,14 +68,14 @@ Screens -> query hooks (TanStack Query) -> repositories -> ApiClient
 
 ## Build phases
 
-| Phase | Scope                                                                                           |
-| ----- | ----------------------------------------------------------------------------------------------- |
-| P0    | Repo, Expo scaffold, NativeWind, lint/test/format, Netlify web preview                          |
-| P1    | Theme tokens + 3 brand themes, API client + mock adapter, seed data, mock auth + role picker    |
-| P2    | Explore, results, location + space detail, slot picker, timezone and currency formatting        |
-| P3    | Distance rule, booking review/confirm, My Bookings, QR check-in, location simulator             |
-| P4    | Staff mode (today board, scanner, walk-in), brand scoping, polish, `schema.sql`, `openapi.yaml` |
-| P5    | Laravel 12 skeleton in `backend/` (migrations, seeders, Sanctum, 3 endpoints)                   |
+| Phase | Scope                                                                                                           |
+| ----- | --------------------------------------------------------------------------------------------------------------- |
+| P0    | Repo, Expo scaffold, NativeWind, lint/test/format, Netlify web preview                                          |
+| P1    | Theme tokens + 3 brand themes, API client + mock adapter, seed data, mock auth + role picker                    |
+| P2    | Explore, results, location + space detail, slot picker, timezone and currency formatting (map view moved to P4) |
+| P3    | Distance rule, booking review/confirm, My Bookings, QR check-in, location simulator                             |
+| P4    | Staff mode (today board, scanner, walk-in), brand scoping, polish, `schema.sql`, `openapi.yaml`                 |
+| P5    | Laravel 12 skeleton in `backend/` (migrations, seeders, Sanctum, 3 endpoints)                                   |
 
 ## Demo script (5 minutes)
 
