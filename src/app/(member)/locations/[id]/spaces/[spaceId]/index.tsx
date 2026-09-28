@@ -1,9 +1,10 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 import type { Slot } from '@/api/schemas/availability';
 import type { LocationDetail } from '@/api/schemas/location';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { useBrands, useCountries } from '@/features/catalog/use-catalog';
@@ -55,6 +56,7 @@ function SpacePicker({ location, spaceId }: { location: LocationDetail; spaceId:
   const [date, setDate] = useState<LocalDate>(() => dates[0] ?? '');
   const [selected, setSelected] = useState<Slot | null>(null);
   const availability = useAvailability(spaceId, date);
+  const router = useRouter();
 
   if (!space) return null;
 
@@ -156,6 +158,20 @@ function SpacePicker({ location, spaceId }: { location: LocationDetail; spaceId:
               {formatMoney(space.rate.price)}
               {country?.tax.label ? ` + ${country.tax.label}` : ''}
             </Text>
+            <Button
+              label="Continue"
+              onPress={() =>
+                router.push({
+                  pathname: '/locations/[id]/spaces/[spaceId]/review',
+                  params: {
+                    id: location.id,
+                    spaceId,
+                    startsAt: selected.startsAt,
+                    endsAt: selected.endsAt,
+                  },
+                })
+              }
+            />
           </Card>
         ) : null}
       </ScrollView>

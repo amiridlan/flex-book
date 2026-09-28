@@ -17,7 +17,15 @@ export default function MemberStackLayout() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="locations/[id]/index" options={{ title: 'Location' }} />
-      <Stack.Screen name="locations/[id]/spaces/[spaceId]" options={{ title: 'Choose a time' }} />
+      <Stack.Screen
+        name="locations/[id]/spaces/[spaceId]/index"
+        options={{ title: 'Choose a time' }}
+      />
+      <Stack.Screen
+        name="locations/[id]/spaces/[spaceId]/review"
+        options={{ title: 'Review booking' }}
+      />
+      <Stack.Screen name="bookings/[id]" options={{ title: 'Booking' }} />
     </Stack>
   );
 }
