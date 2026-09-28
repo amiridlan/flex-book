@@ -7,7 +7,8 @@
 --   * Every instant is stored in UTC (DATETIME(3), app/DB session time_zone = '+00:00').
 --     Local times are derived from locations.timezone (IANA) at the edge, never stored.
 --   * Money is BIGINT minor units + CHAR(3) ISO 4217 currency. No DECIMAL/FLOAT for prices.
---   * Public ids are ULIDs (CHAR(26)) so they are not guessable; tables still use them as PKs.
+--   * Ids are VARCHAR(40): ULIDs (not guessable) for new rows; demo fixtures keep
+--     readable ids such as 'loc_tcg_kul' so the app's mock and this database match.
 --   * Enumerations use VARCHAR + CHECK (portable across MySQL and MariaDB, easy to extend).
 
 SET NAMES utf8mb4;
@@ -40,7 +41,7 @@ CREATE TABLE countries (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE locations (
-  id                   CHAR(26)      NOT NULL,
+  id                   VARCHAR(40)      NOT NULL,
   brand_id             VARCHAR(32)   NOT NULL,
   country_code         CHAR(2)       NOT NULL,
   city                 VARCHAR(80)   NOT NULL,
@@ -64,7 +65,7 @@ CREATE TABLE locations (
 
 -- Wall-clock hours in the location's own timezone. No row for a weekday = closed.
 CREATE TABLE location_opening_hours (
-  location_id  CHAR(26)          NOT NULL,
+  location_id  VARCHAR(40)          NOT NULL,
   weekday      TINYINT UNSIGNED  NOT NULL,              -- 0 = Monday … 6 = Sunday
   opens        TIME              NOT NULL,
   closes       TIME              NOT NULL,
@@ -75,19 +76,20 @@ CREATE TABLE location_opening_hours (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE location_amenities (
-  location_id  CHAR(26)     NOT NULL,
+  location_id  VARCHAR(40)     NOT NULL,
   amenity      VARCHAR(60)  NOT NULL,
   PRIMARY KEY (location_id, amenity),
   CONSTRAINT fk_amenities_location FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE spaces (
-  id                 CHAR(26)          NOT NULL,
-  location_id        CHAR(26)          NOT NULL,
+  id                 VARCHAR(40)          NOT NULL,
+  location_id        VARCHAR(40)          NOT NULL,
   type               VARCHAR(20)       NOT NULL,
   name               VARCHAR(120)      NOT NULL,
   capacity           SMALLINT UNSIGNED NOT NULL,
   seats              SMALLINT UNSIGNED NOT NULL DEFAULT 1, -- shared pools (hot desks): seats sold per day
+  amenities          JSON              NOT NULL,            -- e.g. ["TV screen", "Whiteboard"]
   rate_unit          VARCHAR(8)        NOT NULL,
   rate_amount_minor  BIGINT UNSIGNED   NOT NULL,
   rate_currency      CHAR(3)           NOT NULL,
@@ -108,7 +110,7 @@ CREATE TABLE spaces (
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE users (
-  id                 CHAR(26)      NOT NULL,
+  id                 VARCHAR(40)      NOT NULL,
   name               VARCHAR(120)  NOT NULL,
   email              VARCHAR(191)  NOT NULL,
   phone              VARCHAR(32)   NULL,
@@ -128,9 +130,9 @@ CREATE TABLE users (
 -- Enforced by a Laravel global scope + policies on every staff query.
 CREATE TABLE staff_assignments (
   id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id      CHAR(26)     NOT NULL,
+  user_id      VARCHAR(40)     NOT NULL,
   brand_id     VARCHAR(32)  NOT NULL,
-  location_id  CHAR(26)     NULL,
+  location_id  VARCHAR(40)     NULL,
   created_at   DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
   UNIQUE KEY uq_assignment (user_id, brand_id, location_id),
@@ -144,7 +146,7 @@ CREATE TABLE staff_assignments (
 CREATE TABLE personal_access_tokens (
   id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   tokenable_type  VARCHAR(255)  NOT NULL,
-  tokenable_id    CHAR(26)      NOT NULL,
+  tokenable_id    VARCHAR(40)      NOT NULL,
   name            VARCHAR(255)  NOT NULL,
   token           CHAR(64)      NOT NULL,                -- SHA-256 of the plain token
   abilities       TEXT          NULL,
@@ -162,11 +164,11 @@ CREATE TABLE personal_access_tokens (
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE bookings (
-  id                  CHAR(26)      NOT NULL,
+  id                  VARCHAR(40)      NOT NULL,
   code                CHAR(8)       NOT NULL,             -- 'FXB-7QLM', shown to people
-  space_id            CHAR(26)      NOT NULL,
-  location_id         CHAR(26)      NOT NULL,             -- denormalised for staff-board queries
-  user_id             CHAR(26)      NULL,                 -- NULL for walk-in guests
+  space_id            VARCHAR(40)      NOT NULL,
+  location_id         VARCHAR(40)      NOT NULL,             -- denormalised for staff-board queries
+  user_id             VARCHAR(40)      NULL,                 -- NULL for walk-in guests
   guest_name          VARCHAR(120)  NULL,
   guest_email         VARCHAR(191)  NULL,
   status              VARCHAR(12)   NOT NULL DEFAULT 'confirmed',
@@ -178,17 +180,17 @@ CREATE TABLE bookings (
   currency            CHAR(3)       NOT NULL,
   tax_label           VARCHAR(16)   NULL,                 -- snapshot at booking time
   tax_rate_bp         SMALLINT UNSIGNED NOT NULL,         -- snapshot at booking time
-  qr_token_hash       CHAR(64)      NOT NULL,             -- SHA-256; the plain token only goes to the owner
+  -- No QR secret is stored: the check-in token is HMAC-SHA256(booking id, app key).
   -- Anti-fake-booking audit trail: where the phone said it was when booking.
   booked_lat          DECIMAL(9,6)  NULL,
   booked_lng          DECIMAL(9,6)  NULL,
   booked_distance_km  DECIMAL(8,2)  NULL,
   booked_mocked_gps   BOOLEAN       NOT NULL DEFAULT FALSE,
   checked_in_at       DATETIME(3)   NULL,
-  checked_in_by       CHAR(26)      NULL,                 -- staff user for desk/QR check-ins
+  checked_in_by       VARCHAR(40)      NULL,                 -- staff user for desk/QR check-ins
   check_in_method     VARCHAR(8)    NULL,
   cancelled_at        DATETIME(3)   NULL,
-  created_by          CHAR(26)      NULL,                 -- staff user for walk-ins
+  created_by          VARCHAR(40)      NULL,                 -- staff user for walk-ins
   created_at          DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at          DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
