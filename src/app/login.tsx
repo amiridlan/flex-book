@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -85,7 +86,15 @@ export default function LoginScreen() {
               ))}
             </View>
           </View>
-          <Text className="text-xs text-sidebar-muted">{DISCLAIMER}</Text>
+          <View className="gap-3">
+            <Link
+              href="/docs"
+              className="text-sm font-semibold text-sidebar-text underline hover:text-white"
+            >
+              About this demo: stack, architecture and hosting
+            </Link>
+            <Text className="text-xs text-sidebar-muted">{DISCLAIMER}</Text>
+          </View>
         </View>
         <ScrollView
           className="flex-1"
@@ -116,6 +125,9 @@ export default function LoginScreen() {
         </Text>
       </View>
       {accounts}
+      <Link href="/docs" className="py-2 text-sm font-semibold text-primary underline">
+        About this demo
+      </Link>
       <Text className="text-xs text-text-muted">{DISCLAIMER}</Text>
     </Screen>
   );

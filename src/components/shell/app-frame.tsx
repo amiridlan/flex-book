@@ -100,24 +100,36 @@ function Sidebar({ nav }: { readonly nav: readonly NavItem[] }) {
         </View>
       </View>
 
-      {user ? (
-        <View className="gap-1 border-t border-sidebar-active px-3 pt-4">
-          <Text className="text-sm font-semibold text-sidebar-text" numberOfLines={1}>
-            {user.name}
-          </Text>
-          <Text className="text-xs text-sidebar-muted" numberOfLines={1}>
-            {ROLE_LABELS[user.role]} · {user.email}
-          </Text>
+      <View className="gap-4">
+        <Link href="/docs" asChild>
           <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Sign out"
-            onPress={() => signOut.mutate()}
-            className="mt-2 self-start rounded-md py-1"
+            accessibilityRole="link"
+            accessibilityLabel="Documentation"
+            className="min-h-touch flex-row items-center gap-3 rounded-lg px-3 hover:bg-sidebar-active/60"
           >
-            <Text className="text-sm text-sidebar-muted hover:text-white">Sign out</Text>
+            <Ionicons name="book-outline" size={20} color={colors['sidebar-muted']} />
+            <Text className="text-[15px] text-sidebar-muted">Documentation</Text>
           </Pressable>
-        </View>
-      ) : null}
+        </Link>
+        {user ? (
+          <View className="gap-1 border-t border-sidebar-active px-3 pt-4">
+            <Text className="text-sm font-semibold text-sidebar-text" numberOfLines={1}>
+              {user.name}
+            </Text>
+            <Text className="text-xs text-sidebar-muted" numberOfLines={1}>
+              {ROLE_LABELS[user.role]} · {user.email}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Sign out"
+              onPress={() => signOut.mutate()}
+              className="mt-2 self-start rounded-md py-1"
+            >
+              <Text className="text-sm text-sidebar-muted hover:text-white">Sign out</Text>
+            </Pressable>
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }

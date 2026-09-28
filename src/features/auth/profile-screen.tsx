@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { useSignOut } from './use-auth';
 export function ProfileScreen() {
   const user = useSessionStore((s) => s.user);
   const signOut = useSignOut();
+  const router = useRouter();
   const brands = useBrands();
   const locations = useLocations();
 
@@ -60,6 +62,7 @@ export function ProfileScreen() {
 
         {env.apiMode === 'mock' ? <DemoLocationPicker /> : null}
 
+        <Button label="About this demo" variant="ghost" onPress={() => router.push('/docs')} />
         <Button
           label="Sign out"
           variant="secondary"
