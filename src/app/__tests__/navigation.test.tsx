@@ -23,6 +23,19 @@ describe('route guards', () => {
     expect(await screen.findByText('Choose a demo account')).toBeTruthy();
   });
 
+  it('opens the documentation before sign-in and comes back', async () => {
+    await renderRouter(ROUTES, { initialUrl: '/login' });
+
+    await fireEvent.press(await screen.findByText('About this demo'));
+
+    expect(await screen.findByText('Tech stack')).toBeTruthy();
+    expect(screen.getByText('Hosting and delivery')).toBeTruthy();
+    expect(screen.getByText('Expo Router')).toBeTruthy();
+
+    await fireEvent.press(screen.getByLabelText('Back'));
+    expect(await screen.findByText('Choose a demo account')).toBeTruthy();
+  });
+
   it('takes a member to Explore after sign-in', async () => {
     await renderRouter(ROUTES, { initialUrl: '/login' });
 

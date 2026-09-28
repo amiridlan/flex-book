@@ -8,6 +8,7 @@ import LocationDetailScreen from '@/app/(member)/locations/[id]/index';
 import BookingDetailScreen from '@/app/(member)/bookings/[id]';
 import SpaceScreen from '@/app/(member)/locations/[id]/spaces/[spaceId]/index';
 import BookingReviewScreen from '@/app/(member)/locations/[id]/spaces/[spaceId]/review';
+import DocsScreen from '@/app/docs';
 import LoginScreen from '@/app/login';
 import StaffTabsLayout from '@/app/staff/_layout';
 import StaffHomeScreen from '@/app/staff/index';
@@ -19,6 +20,7 @@ import StaffWalkInScreen from '@/app/staff/walk-in';
 export const ROUTES = {
   _layout: RootLayout,
   login: LoginScreen,
+  docs: DocsScreen,
   '(member)/_layout': MemberStackLayout,
   '(member)/(tabs)/_layout': MemberTabsLayout,
   '(member)/(tabs)/index': ExploreScreen,

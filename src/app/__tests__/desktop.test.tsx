@@ -29,6 +29,7 @@ describe('desktop layout', () => {
     expect(await screen.findByText('Find a workspace', {}, SLOW)).toBeTruthy();
     expect(screen.getByLabelText('Main')).toBeTruthy();
     expect(screen.getByLabelText('Sign out')).toBeTruthy();
+    expect(screen.getByLabelText('Documentation')).toBeTruthy();
 
     await fireEvent.press(await screen.findByLabelText(/Bangsar Loft/, {}, SLOW));
     expect(await screen.findByLabelText('Breadcrumb', {}, SLOW)).toBeTruthy();
@@ -63,5 +64,14 @@ describe('desktop layout', () => {
     await fireEvent.press(screen.getByLabelText('Walk-in'));
     expect(await screen.findByText('Space and time', {}, SLOW)).toBeTruthy();
     expect(screen.getByText('Guest')).toBeTruthy();
+  });
+
+  it('shows the documentation with a contents list', async () => {
+    await renderRouter(ROUTES, { initialUrl: '/docs' });
+
+    expect(await screen.findByLabelText('On this page')).toBeTruthy();
+    expect(screen.getByText('About this demo')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Sign in'));
+    expect(await screen.findByText('Choose a demo account')).toBeTruthy();
   });
 });
