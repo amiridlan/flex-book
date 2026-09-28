@@ -4,6 +4,7 @@ import type { HttpRequest, HttpResponse, HttpTransport } from '../client/transpo
 import type { Location } from '../schemas/location';
 import type { User } from '../schemas/user';
 import { canSeeLocation } from './access';
+import { buildAvailability } from './availability';
 import { BRANDS } from './db/brands';
 import { COUNTRIES } from './db/countries';
 import { LOCATIONS } from './db/locations';
@@ -17,11 +18,17 @@ export type MockServerOptions = {
   /** 0–1 chance that a request fails with a 500, to exercise error states. */
   readonly failureRate: number;
   readonly random?: () => number;
+  /** Clock for availability; injectable so tests are deterministic. */
+  readonly now?: () => number;
 };
 
 const loginBodySchema = z.object({
   email: z.string().trim().min(1, 'The email field is required.'),
   password: z.string().min(1, 'The password field is required.'),
+});
+
+const availabilityQuerySchema = z.object({
+  date: z.iso.date({ error: 'The date field must be a valid date (YYYY-MM-DD).' }),
 });
 
 const listQuerySchema = z.object({
@@ -39,6 +46,7 @@ const listQuerySchema = z.object({
  */
 export function createMockServer(options: MockServerOptions): HttpTransport {
   const random = options.random ?? Math.random;
+  const now = options.now ?? Date.now;
   const sessions = new Map<string, string>(); // token -> user id
   const router = createRouter();
 
@@ -140,6 +148,23 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       }
       const spaces = SPACES.filter((s) => s.locationId === location.id);
       return json(200, { data: { ...location, spaces } });
+    }),
+  );
+
+  router.on(
+    'GET',
+    '/spaces/:id/availability',
+    authed((user, request, params) => {
+      const space = SPACES.find((s) => s.id === params.id);
+      const location = LOCATIONS.find((l) => l.id === space?.locationId);
+      if (!space || !location || !canSeeLocation(user, location)) {
+        return json(404, { message: 'Space not found.' });
+      }
+      const query = availabilityQuerySchema.safeParse(request.query ?? {});
+      if (!query.success) {
+        return validationError({ date: [query.error.issues[0]?.message ?? 'Invalid date.'] });
+      }
+      return json(200, { data: buildAvailability(location, space, query.data.date, now()) });
     }),
   );
 

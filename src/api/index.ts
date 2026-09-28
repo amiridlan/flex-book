@@ -8,6 +8,7 @@ import { createMockServer } from './mock/mock-server';
 import { createAuthRepository } from './repositories/auth-repository';
 import { createCatalogRepository } from './repositories/catalog-repository';
 import { createLocationRepository } from './repositories/location-repository';
+import { createSpaceRepository } from './repositories/space-repository';
 
 function createTransport(): HttpTransport {
   if (env.apiMode === 'http' && env.apiBaseUrl) return createFetchTransport(env.apiBaseUrl);
@@ -24,3 +25,4 @@ export const apiClient = createApiClient({
 export const authRepository = createAuthRepository(apiClient);
 export const catalogRepository = createCatalogRepository(apiClient);
 export const locationRepository = createLocationRepository(apiClient);
+export const spaceRepository = createSpaceRepository(apiClient);

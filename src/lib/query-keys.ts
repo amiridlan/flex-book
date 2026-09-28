@@ -9,4 +9,5 @@ export const queryKeys = {
     list: (filters: LocationFilters) => ['locations', 'list', filters] as const,
     detail: (id: string) => ['locations', 'detail', id] as const,
   },
+  availability: (spaceId: string, date: string) => ['availability', spaceId, date] as const,
 };
