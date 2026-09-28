@@ -6,42 +6,7 @@ import { useDemoLocationStore } from '@/features/device-location/demo-location-s
 import { DEMO_PLACES } from '@/features/device-location/demo-places';
 import { queryClient } from '@/lib/query-client';
 import { nextLocalDates, shortDateLabel } from '@/lib/time';
-
-import RootLayout from '../_layout';
-import MemberStackLayout from '../(member)/_layout';
-import MemberTabsLayout from '../(member)/(tabs)/_layout';
-import BookingsScreen from '../(member)/(tabs)/bookings';
-import ExploreScreen from '../(member)/(tabs)/index';
-import MemberProfile from '../(member)/(tabs)/profile';
-import LocationDetailScreen from '../(member)/locations/[id]/index';
-import BookingDetailScreen from '../(member)/bookings/[id]';
-import SpaceScreen from '../(member)/locations/[id]/spaces/[spaceId]/index';
-import BookingReviewScreen from '../(member)/locations/[id]/spaces/[spaceId]/review';
-import LoginScreen from '../login';
-import StaffTabsLayout from '../staff/_layout';
-import StaffHomeScreen from '../staff/index';
-import StaffProfile from '../staff/profile';
-import StaffScanScreen from '../staff/scan';
-import StaffWalkInScreen from '../staff/walk-in';
-
-const ROUTES = {
-  _layout: RootLayout,
-  login: LoginScreen,
-  '(member)/_layout': MemberStackLayout,
-  '(member)/(tabs)/_layout': MemberTabsLayout,
-  '(member)/(tabs)/index': ExploreScreen,
-  '(member)/(tabs)/bookings': BookingsScreen,
-  '(member)/(tabs)/profile': MemberProfile,
-  '(member)/locations/[id]/index': LocationDetailScreen,
-  '(member)/locations/[id]/spaces/[spaceId]/index': SpaceScreen,
-  '(member)/locations/[id]/spaces/[spaceId]/review': BookingReviewScreen,
-  '(member)/bookings/[id]': BookingDetailScreen,
-  'staff/_layout': StaffTabsLayout,
-  'staff/index': StaffHomeScreen,
-  'staff/profile': StaffProfile,
-  'staff/scan': StaffScanScreen,
-  'staff/walk-in': StaffWalkInScreen,
-};
+import { ROUTES } from '@/test-utils/app-routes';
 
 const SLOW = { timeout: 5000 };
 
