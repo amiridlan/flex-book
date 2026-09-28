@@ -16,13 +16,14 @@ It is **frontend-only**, backed by a **mock API adapter** with fictional data. A
 - Verify work with `npm run check` and `npm run build:web`. The developer reviews UI on the **Netlify deploy preview** of the PR, and device features on their phone via **Expo Go**.
 - No simulators in the cloud. To prove native code compiles, run `npx expo export --platform android` (and `ios`) with `--output-dir` pointing at the scratchpad.
 - **`docs.expo.dev` and `api.expo.dev` are blocked** by the network allowlist. For Expo APIs, read the package's types and README in `node_modules/`. Run `npx expo install` as `EXPO_OFFLINE=1 npx expo install <pkg>` (it resolves SDK-compatible versions from the local `expo` package).
+- **Mobile delivery is EAS Workflows on Expo's servers** (project `amiridlan/flex-book`, linked to GitHub). `.eas/workflows/publish-update.yml` publishes an update on every push to `main`; the developer opens it in Expo Go. `android-preview-apk.yml` is a manual APK build. No Expo token lives in this repo or the cloud environment, and `eas` cannot reach Expo from here (blocked by the allowlist).
 - Every command must be non-interactive. Never leave `expo start` or other long-running processes running.
 
 ## Stack
 
 Expo SDK 57, React Native 0.86, React 19.2, TypeScript 6 (strict), Expo Router (typed routes), NativeWind 4 + Tailwind CSS 3.4, Jest (`jest-expo`) + React Native Testing Library 14, ESLint 9 (`eslint-config-expo`) + Prettier. npm.
 
-Installed: TanStack Query, Zustand, Zod, @expo/vector-icons (Ionicons), date-fns v4 + @date-fns/tz, expo-location, qrcode (pure-JS QR encoder, rendered with Views). Planned (add in the phase that needs them, via `EXPO_OFFLINE=1 npx expo install`): React Hook Form, i18next, expo-camera, expo-secure-store, react-native-maps. **Ask before adding anything not on this list.**
+Installed: TanStack Query, Zustand, Zod, @expo/vector-icons (Ionicons), date-fns v4 + @date-fns/tz, expo-location, qrcode (pure-JS QR encoder, rendered with Views), expo-updates (EAS Update). Planned (add in the phase that needs them, via `EXPO_OFFLINE=1 npx expo install`): React Hook Form, i18next, expo-camera, expo-secure-store, react-native-maps. **Ask before adding anything not on this list.**
 
 ## Commands
 

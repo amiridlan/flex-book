@@ -2,6 +2,7 @@
   "expo": {
     "name": "FlexiSpace",
     "slug": "flex-book",
+    "owner": "amiridlan",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -47,6 +48,17 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b48b7a22-fea7-40b5-815a-e27fcce5e4a5"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b48b7a22-fea7-40b5-815a-e27fcce5e4a5"
+      }
     }
   }
 }

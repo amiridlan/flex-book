@@ -1,0 +1,15 @@
+# Runs on Expo's servers (EAS Workflows) via the GitHub integration.
+# Every push to main publishes an over-the-air update that Expo Go and the
+# preview APK can open. No Expo token is stored in this repo or in CI.
+name: Publish update
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish_update:
+    name: Publish update to the main branch
+    type: update
+    params:
+      branch: main

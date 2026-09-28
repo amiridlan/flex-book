@@ -1,0 +1,11 @@
+# Manual workflow: builds an installable Android APK (the demo backup to Expo Go).
+# Run it from the project's Workflows page on expo.dev, or `eas workflow:run android-preview-apk.yml`.
+name: Android preview APK
+
+jobs:
+  build_android:
+    name: Build Android APK
+    type: build
+    params:
+      platform: android
+      profile: preview
