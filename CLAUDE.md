@@ -23,7 +23,7 @@ It is **frontend-only**, backed by a **mock API adapter** with fictional data. A
 
 Expo SDK 57, React Native 0.86, React 19.2, TypeScript 6 (strict), Expo Router (typed routes), NativeWind 4 + Tailwind CSS 3.4, Jest (`jest-expo`) + React Native Testing Library 14, ESLint 9 (`eslint-config-expo`) + Prettier. npm.
 
-Installed: TanStack Query, Zustand, Zod, @expo/vector-icons (Ionicons), date-fns v4 + @date-fns/tz, expo-location, qrcode (pure-JS QR encoder, rendered with Views), expo-updates (EAS Update). Planned (add in the phase that needs them, via `EXPO_OFFLINE=1 npx expo install`): React Hook Form, i18next, expo-camera, expo-secure-store, react-native-maps. **Ask before adding anything not on this list.**
+Installed: TanStack Query, Zustand, Zod, @expo/vector-icons (Ionicons), date-fns v4 + @date-fns/tz, expo-location, qrcode (pure-JS QR encoder, rendered with Views), expo-updates (EAS Update), expo-camera (QR scanning, also on web), React Hook Form + @hookform/resolvers. Planned (add in the phase that needs them, via `EXPO_OFFLINE=1 npx expo install`): i18next, expo-secure-store, react-native-maps. **Ask before adding anything not on this list.**
 
 ## Commands
 

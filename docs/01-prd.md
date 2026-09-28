@@ -68,14 +68,14 @@ Screens -> query hooks (TanStack Query) -> repositories -> ApiClient
 
 ## Build phases
 
-| Phase | Scope                                                                                                           |
-| ----- | --------------------------------------------------------------------------------------------------------------- |
-| P0    | Repo, Expo scaffold, NativeWind, lint/test/format, Netlify web preview                                          |
-| P1    | Theme tokens + 3 brand themes, API client + mock adapter, seed data, mock auth + role picker                    |
-| P2    | Explore, results, location + space detail, slot picker, timezone and currency formatting (map view moved to P4) |
-| P3    | Distance rule, booking review/confirm, My Bookings, QR check-in, location simulator                             |
-| P4    | Staff mode (today board, scanner, walk-in), brand scoping, polish, `schema.sql`, `openapi.yaml`                 |
-| P5    | Laravel 12 skeleton in `backend/` (migrations, seeders, Sanctum, 3 endpoints)                                   |
+| Phase | Scope                                                                                                                                                                       |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0    | Repo, Expo scaffold, NativeWind, lint/test/format, Netlify web preview                                                                                                      |
+| P1    | Theme tokens + 3 brand themes, API client + mock adapter, seed data, mock auth + role picker                                                                                |
+| P2    | Explore, results, location + space detail, slot picker, timezone and currency formatting (map view moved to P4)                                                             |
+| P3    | Distance rule, booking review/confirm, My Bookings, QR check-in, location simulator                                                                                         |
+| P4    | Staff mode (today board, QR or code check-in, walk-ins, auto no-show), `schema.sql`, generated `openapi.json`. Map view deferred: Android builds need a Google Maps API key |
+| P5    | Laravel 12 skeleton in `backend/` (migrations, seeders, Sanctum, 3 endpoints)                                                                                               |
 
 ## Demo script (5 minutes)
 
@@ -83,6 +83,7 @@ Screens -> query hooks (TanStack Query) -> repositories -> ApiClient
 2. Browse Hive in Sydney: prices in AUD, slots in Sydney time with the zone label.
 3. Try to book a Sydney hot desk for today: blocked, distance shown.
 4. Simulate being in Sydney: booking goes through, QR appears.
-5. Log in as Hive staff: only Hive locations; check the member in.
-6. Switch to The Common Ground staff: Hive data is gone.
-7. Close on the architecture: one setting swaps mock for Laravel + MySQL on AWS.
+5. Log in as Hive staff: Today board for Bangsar Loft with masked emails; check in the guest who is arriving now; show the auto-released no-show.
+6. Scan tab: type a booking code from another brand, get "No booking with that code at your locations". Walk-in tab: submit empty to show field errors, then book a hot desk.
+7. Switch to The Common Ground KL staff: one location only, Hive data is gone.
+8. Close on the architecture: `docs/openapi.json` generated from the app's Zod schemas, `schema.sql` for MySQL/MariaDB, and one setting swaps the mock for Laravel on AWS.
