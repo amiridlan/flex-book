@@ -16,7 +16,7 @@ It is **frontend-only**, backed by a **mock API adapter** with fictional data. A
 - Verify work with `npm run check` and `npm run build:web`. The developer reviews UI on the **Netlify deploy preview** of the PR, and device features on their phone via **Expo Go**.
 - No simulators in the cloud. To prove native code compiles, run `npx expo export --platform android` (and `ios`) with `--output-dir` pointing at the scratchpad.
 - **`docs.expo.dev` and `api.expo.dev` are blocked** by the network allowlist. For Expo APIs, read the package's types and README in `node_modules/`. Run `npx expo install` as `EXPO_OFFLINE=1 npx expo install <pkg>` (it resolves SDK-compatible versions from the local `expo` package).
-- **Mobile delivery is EAS Workflows on Expo's servers** (Expo account `amiridlan-team`, project `flex-book`, linked to GitHub). `.eas/workflows/publish-update.yml` publishes an update on every push to `main`; the developer opens it in Expo Go. `android-preview-apk.yml` is a manual APK build. No Expo token lives in this repo or the cloud environment, and `eas` cannot reach Expo from here (blocked by the allowlist).
+- **Mobile delivery is EAS Workflows on Expo's servers** (Expo account `amiridlan-team`, project slug `amir`, linked to GitHub). `.eas/workflows/publish-update.yml` publishes an update on every push to `main`; the developer opens it in Expo Go. `android-preview-apk.yml` is a manual APK build. No Expo token lives in this repo or the cloud environment, and `eas` cannot reach Expo from here (blocked by the allowlist).
 - Every command must be non-interactive. Never leave `expo start` or other long-running processes running.
 
 ## Stack
