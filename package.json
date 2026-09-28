@@ -3,6 +3,8 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@tanstack/react-query": "^5.104.0",
     "expo": "~57.0.25",
     "expo-constants": "~57.0.19",
     "expo-font": "~57.0.4",
@@ -24,7 +26,9 @@
     "react-native-screens": "~4.26.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.10.1",
-    "tailwindcss": "^3.4"
+    "tailwindcss": "^3.4",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
@@ -63,6 +67,9 @@
       "/node_modules/",
       "/backend/",
       "/dist/"
-    ]
+    ],
+    "moduleNameMapper": {
+      "\\.css$": "<rootDir>/jest/style-stub.js"
+    }
   }
 }
