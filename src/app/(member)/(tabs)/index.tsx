@@ -3,6 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 
 import type { BrandId } from '@/api/schemas/brand';
 import type { CountryCode } from '@/api/schemas/common';
+import { CardGrid } from '@/components/ui/card-grid';
 import { Chip } from '@/components/ui/chip';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
@@ -88,14 +89,16 @@ export default function ExploreScreen() {
         ) : locations.data.data.length === 0 ? (
           <EmptyState title="No spaces here yet" message="Try another country or brand." />
         ) : (
-          locations.data.data.map((location) => (
-            <LocationCard
-              key={location.id}
-              location={location}
-              brand={brands.data.find((b) => b.id === location.brandId)}
-              href={{ pathname: '/locations/[id]', params: { id: location.id } }}
-            />
-          ))
+          <CardGrid>
+            {locations.data.data.map((location) => (
+              <LocationCard
+                key={location.id}
+                location={location}
+                brand={brands.data.find((b) => b.id === location.brandId)}
+                href={{ pathname: '/locations/[id]', params: { id: location.id } }}
+              />
+            ))}
+          </CardGrid>
         )}
       </View>
     </Screen>

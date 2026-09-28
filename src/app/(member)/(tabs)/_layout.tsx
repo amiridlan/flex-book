@@ -1,11 +1,13 @@
 import { Tabs } from 'expo-router/js-tabs';
 
 import { tabIcon } from '@/components/tab-icon';
-import { TAB_SCREEN_OPTIONS } from '@/components/tab-options';
+import { tabScreenOptions } from '@/components/tab-options';
+import { useLayout } from '@/lib/use-layout';
 
 export default function MemberTabsLayout() {
+  const { wide } = useLayout();
   return (
-    <Tabs screenOptions={TAB_SCREEN_OPTIONS}>
+    <Tabs screenOptions={tabScreenOptions(wide)}>
       <Tabs.Screen name="index" options={{ title: 'Explore', tabBarIcon: tabIcon('search') }} />
       <Tabs.Screen
         name="bookings"

@@ -30,7 +30,7 @@ export function ProfileScreen() {
   });
 
   return (
-    <Screen scroll>
+    <Screen scroll width="narrow">
       <ScreenHeader title={user.name} subtitle={user.email} />
 
       <Card>

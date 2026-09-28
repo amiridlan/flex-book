@@ -83,7 +83,7 @@ export default function BookingReviewScreen() {
       className="flex-1"
     >
       <Stack.Screen options={{ title: 'Review booking' }} />
-      <ScrollView contentContainerClassName="gap-5 p-4 pb-10">
+      <ScrollView contentContainerClassName="w-full max-w-2xl self-center gap-5 p-4 pb-10 lg:p-8">
         <Card>
           <Text className="text-sm font-semibold uppercase tracking-wide text-primary">
             {data.name}, {data.city}

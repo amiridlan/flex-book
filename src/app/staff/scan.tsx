@@ -59,7 +59,7 @@ export default function StaffScanScreen() {
 
   return (
     <StaffBrandScope>
-      <Screen scroll>
+      <Screen scroll width="narrow">
         <ScreenHeader title="Check in a member" subtitle="Scan their booking QR code." />
 
         <QrScanner onScan={onScan} paused={busy} />

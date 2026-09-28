@@ -76,7 +76,7 @@ function SpacePicker({ location, spaceId }: { location: LocationDetail; spaceId:
   return (
     <BrandThemeScope theme={brand?.theme} className="flex-1">
       <Stack.Screen options={{ title: space.name }} />
-      <ScrollView contentContainerClassName="gap-5 p-4 pb-10">
+      <ScrollView contentContainerClassName="w-full max-w-2xl self-center gap-5 p-4 pb-10 lg:p-8">
         <View className="gap-1">
           <Text accessibilityRole="header" className="text-2xl font-bold text-text">
             {space.name}

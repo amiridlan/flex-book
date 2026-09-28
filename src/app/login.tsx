@@ -21,7 +21,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen scroll>
+    <Screen scroll width="compact">
       <View className="gap-2 pt-6">
         <Text accessibilityRole="header" className="text-3xl font-bold text-text">
           FlexiSpace

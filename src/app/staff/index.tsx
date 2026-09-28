@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 
 import { firstError } from '@/api/client/api-error';
 import type { StaffBooking } from '@/api/schemas/booking';
+import { CardGrid } from '@/components/ui/card-grid';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { checkInWindowOpen } from '@/domain/booking-rules';
@@ -169,7 +170,11 @@ function Section({
       <Text accessibilityRole="header" className="text-lg font-semibold text-text">
         {title}
       </Text>
-      {children.length === 0 ? <Text className="text-sm text-text-muted">{empty}</Text> : children}
+      {children.length === 0 ? (
+        <Text className="text-sm text-text-muted">{empty}</Text>
+      ) : (
+        <CardGrid>{children}</CardGrid>
+      )}
     </View>
   );
 }

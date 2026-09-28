@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Text, View } from 'react-native';
 
 import type { Booking } from '@/api/schemas/booking';
+import { CardGrid } from '@/components/ui/card-grid';
 import { Chip } from '@/components/ui/chip';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
@@ -55,13 +56,15 @@ export default function BookingsScreen() {
           <Text className="text-sm text-text-muted">
             {sorted.length === 1 ? '1 booking' : `${sorted.length} bookings`}
           </Text>
-          {sorted.map((booking) => (
-            <BookingCard
-              key={booking.id}
-              booking={booking}
-              brand={brands.data?.find((b) => b.id === booking.location.brandId)}
-            />
-          ))}
+          <CardGrid>
+            {sorted.map((booking) => (
+              <BookingCard
+                key={booking.id}
+                booking={booking}
+                brand={brands.data?.find((b) => b.id === booking.location.brandId)}
+              />
+            ))}
+          </CardGrid>
         </View>
       )}
     </Screen>

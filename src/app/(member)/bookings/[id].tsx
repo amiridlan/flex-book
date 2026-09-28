@@ -56,7 +56,7 @@ export default function BookingDetailScreen() {
       className="flex-1"
     >
       <Stack.Screen options={{ title: confirmed ? 'Booking confirmed' : 'Booking' }} />
-      <ScrollView contentContainerClassName="gap-5 p-4 pb-10">
+      <ScrollView contentContainerClassName="w-full max-w-2xl self-center gap-5 p-4 pb-10 lg:p-8">
         {confirmed ? (
           <View accessibilityRole="alert" className="rounded-2xl bg-success-soft p-4">
             <Text className="text-base font-semibold text-success">You’re booked in!</Text>

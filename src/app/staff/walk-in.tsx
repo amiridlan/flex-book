@@ -52,7 +52,7 @@ export default function StaffWalkInScreen() {
 
   return (
     <StaffBrandScope>
-      <Screen scroll>
+      <Screen scroll width="narrow">
         <ScreenHeader
           title="Walk-in booking"
           subtitle={`${current.name}, ${current.city} · today · checked in on save`}
