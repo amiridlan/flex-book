@@ -1,0 +1,2291 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FlexiSpace API",
+    "version": "1.0.0",
+    "description": "Contract between the FlexiSpace app and the Laravel 12 backend. Times are UTC ISO 8601; money is integer minor units plus ISO 4217 currency. Generated from src/api/schemas — do not edit by hand."
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/api/v1",
+      "description": "Placeholder"
+    }
+  ],
+  "security": [
+    {
+      "sanctum": []
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Sign in (Sanctum token)",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Revoke the current token",
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Current user, role, scope and permissions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/brands": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "All brands and their themes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Brand"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/countries": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Markets with currency and tax",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Country"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Locations visible to the user (staff: own scope only)",
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "ISO country code, e.g. MY",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "description": "Brand id, e.g. hive",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "meta",
+                    "links"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Location"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/PaginationLinks"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations/{id}": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Location with its spaces (404 outside staff scope)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LocationDetail"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/spaces/{id}/availability": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Slots for a local date, in UTC",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Date in the location timezone, YYYY-MM-DD",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Availability"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Book a slot. Re-checks the distance rule server-side",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "The member’s bookings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Booking"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{id}": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "One of the member’s bookings",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Cancel (free until 60 minutes before start)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{id}/check-in": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Member self check-in on site",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/locations/{id}/bookings": {
+      "get": {
+        "tags": [
+          "Staff"
+        ],
+        "summary": "Staff board for a location and local date",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "YYYY-MM-DD, defaults to today at the location",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StaffBooking"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/check-ins": {
+      "post": {
+        "tags": [
+          "Staff"
+        ],
+        "summary": "Front-desk check-in by QR token or booking code",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffCheckInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StaffBooking"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/walk-ins": {
+      "post": {
+        "tags": [
+          "Staff"
+        ],
+        "summary": "Book and check in a walk-in guest for today",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalkInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StaffBooking"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sanctum": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Laravel Sanctum personal access token"
+      }
+    },
+    "schemas": {
+      "Brand": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "tcg",
+              "hive",
+              "clustered"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "object",
+            "properties": {
+              "primary": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "onPrimary": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "primarySoft": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              }
+            },
+            "required": [
+              "primary",
+              "onPrimary",
+              "primarySoft"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tagline",
+          "theme"
+        ],
+        "additionalProperties": false
+      },
+      "Country": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "MY",
+              "SG",
+              "HK",
+              "VN",
+              "TH",
+              "AU"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MYR",
+              "SGD",
+              "HKD",
+              "VND",
+              "THB",
+              "AUD"
+            ]
+          },
+          "currencyExponent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "tax": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "nullable": true,
+                "type": "string"
+              },
+              "rateBp": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "label",
+              "rateBp"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "currency",
+          "currencyExponent",
+          "tax"
+        ],
+        "additionalProperties": false
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string",
+            "enum": [
+              "tcg",
+              "hive",
+              "clustered"
+            ]
+          },
+          "countryCode": {
+            "type": "string",
+            "enum": [
+              "MY",
+              "SG",
+              "HK",
+              "VN",
+              "TH",
+              "AU"
+            ]
+          },
+          "city": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "openingHours": {
+            "minItems": 7,
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "nullable": true,
+              "type": "object",
+              "properties": {
+                "opens": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closes": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                }
+              },
+              "required": [
+                "opens",
+                "closes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "amenities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bookingRules": {
+            "type": "object",
+            "properties": {
+              "sameDayRadiusKm": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "checkInRadiusM": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              }
+            },
+            "required": [
+              "sameDayRadiusKm",
+              "checkInRadiusM"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "brandId",
+          "countryCode",
+          "city",
+          "name",
+          "address",
+          "lat",
+          "lng",
+          "timezone",
+          "openingHours",
+          "amenities",
+          "bookingRules"
+        ],
+        "additionalProperties": false
+      },
+      "LocationDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string",
+            "enum": [
+              "tcg",
+              "hive",
+              "clustered"
+            ]
+          },
+          "countryCode": {
+            "type": "string",
+            "enum": [
+              "MY",
+              "SG",
+              "HK",
+              "VN",
+              "TH",
+              "AU"
+            ]
+          },
+          "city": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "openingHours": {
+            "minItems": 7,
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "nullable": true,
+              "type": "object",
+              "properties": {
+                "opens": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closes": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                }
+              },
+              "required": [
+                "opens",
+                "closes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "amenities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bookingRules": {
+            "type": "object",
+            "properties": {
+              "sameDayRadiusKm": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "checkInRadiusM": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              }
+            },
+            "required": [
+              "sameDayRadiusKm",
+              "checkInRadiusM"
+            ],
+            "additionalProperties": false
+          },
+          "spaces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "locationId": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "hot_desk",
+                    "meeting_room",
+                    "private_office",
+                    "event_space"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "capacity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+                },
+                "amenities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "rate": {
+                  "type": "object",
+                  "properties": {
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "hour",
+                        "day",
+                        "month"
+                      ]
+                    },
+                    "price": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "integer"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "enum": [
+                            "MYR",
+                            "SGD",
+                            "HKD",
+                            "VND",
+                            "THB",
+                            "AUD"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "unit",
+                    "price"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "locationId",
+                "type",
+                "name",
+                "capacity",
+                "amenities",
+                "rate"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "brandId",
+          "countryCode",
+          "city",
+          "name",
+          "address",
+          "lat",
+          "lng",
+          "timezone",
+          "openingHours",
+          "amenities",
+          "bookingRules",
+          "spaces"
+        ],
+        "additionalProperties": false
+      },
+      "Availability": {
+        "type": "object",
+        "properties": {
+          "spaceId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "bookable": {
+            "type": "boolean"
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "startsAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "endsAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "available": {
+                  "type": "boolean"
+                },
+                "remaining": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "startsAt",
+                "endsAt",
+                "available",
+                "remaining"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "spaceId",
+          "date",
+          "timezone",
+          "bookable",
+          "open",
+          "slots"
+        ],
+        "additionalProperties": false
+      },
+      "Booking": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "checked_in",
+              "completed",
+              "cancelled",
+              "no_show"
+            ]
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checkedInAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "qrToken": {
+            "nullable": true,
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "subtotal": {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "MYR",
+                      "SGD",
+                      "HKD",
+                      "VND",
+                      "THB",
+                      "AUD"
+                    ]
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              "tax": {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "MYR",
+                      "SGD",
+                      "HKD",
+                      "VND",
+                      "THB",
+                      "AUD"
+                    ]
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              "total": {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "MYR",
+                      "SGD",
+                      "HKD",
+                      "VND",
+                      "THB",
+                      "AUD"
+                    ]
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              "taxLabel": {
+                "nullable": true,
+                "type": "string"
+              },
+              "taxRateBp": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "subtotal",
+              "tax",
+              "total",
+              "taxLabel",
+              "taxRateBp"
+            ],
+            "additionalProperties": false
+          },
+          "space": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "hot_desk",
+                  "meeting_room",
+                  "private_office",
+                  "event_space"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "timezone": {
+                "type": "string"
+              },
+              "brandId": {
+                "type": "string",
+                "enum": [
+                  "tcg",
+                  "hive",
+                  "clustered"
+                ]
+              },
+              "countryCode": {
+                "type": "string",
+                "enum": [
+                  "MY",
+                  "SG",
+                  "HK",
+                  "VN",
+                  "TH",
+                  "AU"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "city",
+              "timezone",
+              "brandId",
+              "countryCode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "status",
+          "startsAt",
+          "endsAt",
+          "createdAt",
+          "checkedInAt",
+          "qrToken",
+          "price",
+          "space",
+          "location"
+        ],
+        "additionalProperties": false
+      },
+      "StaffBooking": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "checked_in",
+              "completed",
+              "cancelled",
+              "no_show"
+            ]
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checkedInAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "qrToken": {
+            "nullable": true,
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "subtotal": {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "MYR",
+                      "SGD",
+                      "HKD",
+                      "VND",
+                      "THB",
+                      "AUD"
+                    ]
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              "tax": {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "MYR",
+                      "SGD",
+                      "HKD",
+                      "VND",
+                      "THB",
+                      "AUD"
+                    ]
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              "total": {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "MYR",
+                      "SGD",
+                      "HKD",
+                      "VND",
+                      "THB",
+                      "AUD"
+                    ]
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              "taxLabel": {
+                "nullable": true,
+                "type": "string"
+              },
+              "taxRateBp": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "subtotal",
+              "tax",
+              "total",
+              "taxLabel",
+              "taxRateBp"
+            ],
+            "additionalProperties": false
+          },
+          "space": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "hot_desk",
+                  "meeting_room",
+                  "private_office",
+                  "event_space"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "timezone": {
+                "type": "string"
+              },
+              "brandId": {
+                "type": "string",
+                "enum": [
+                  "tcg",
+                  "hive",
+                  "clustered"
+                ]
+              },
+              "countryCode": {
+                "type": "string",
+                "enum": [
+                  "MY",
+                  "SG",
+                  "HK",
+                  "VN",
+                  "TH",
+                  "AU"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "city",
+              "timezone",
+              "brandId",
+              "countryCode"
+            ],
+            "additionalProperties": false
+          },
+          "customer": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "emailMasked": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "emailMasked"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "status",
+          "startsAt",
+          "endsAt",
+          "createdAt",
+          "checkedInAt",
+          "qrToken",
+          "price",
+          "space",
+          "location",
+          "customer"
+        ],
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "staff",
+              "brand_admin",
+              "group_admin"
+            ]
+          },
+          "assignments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "brandId": {
+                  "type": "string",
+                  "enum": [
+                    "tcg",
+                    "hive",
+                    "clustered"
+                  ]
+                },
+                "locationId": {
+                  "nullable": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "brandId",
+                "locationId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "locations.view",
+                "bookings.create",
+                "bookings.view_own",
+                "staff.dashboard",
+                "bookings.view_location",
+                "bookings.check_in",
+                "bookings.walk_in",
+                "spaces.block",
+                "spaces.manage",
+                "reports.view",
+                "brands.manage"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "assignments",
+          "permissions"
+        ],
+        "additionalProperties": false
+      },
+      "CreateBookingRequest": {
+        "type": "object",
+        "properties": {
+          "spaceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "device": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "mocked": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "lat",
+              "lng",
+              "mocked"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "spaceId",
+          "startsAt",
+          "endsAt",
+          "device"
+        ],
+        "additionalProperties": false
+      },
+      "CheckInRequest": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "geo"
+            ]
+          },
+          "device": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "mocked": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "lat",
+              "lng",
+              "mocked"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "method",
+          "device"
+        ],
+        "additionalProperties": false
+      },
+      "StaffCheckInRequest": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "bookingId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "token": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "bookingId",
+              "token"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^FXB-[A-Z2-9]{4}$"
+              }
+            },
+            "required": [
+              "code"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "WalkInRequest": {
+        "type": "object",
+        "properties": {
+          "spaceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "guestName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "guestEmail": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "spaceId",
+          "startsAt",
+          "endsAt",
+          "guestName",
+          "guestEmail"
+        ],
+        "additionalProperties": false
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "CancelRequest": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "cancelled"
+            ]
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "token",
+              "user"
+            ],
+            "properties": {
+              "token": {
+                "type": "string"
+              },
+              "user": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "required": [
+          "current_page",
+          "last_page",
+          "per_page",
+          "total"
+        ],
+        "properties": {
+          "current_page": {
+            "type": "integer"
+          },
+          "last_page": {
+            "type": "integer"
+          },
+          "per_page": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "PaginationLinks": {
+        "type": "object",
+        "required": [
+          "first",
+          "last",
+          "prev",
+          "next"
+        ],
+        "properties": {
+          "first": {
+            "type": "string",
+            "nullable": true
+          },
+          "last": {
+            "type": "string",
+            "nullable": true
+          },
+          "prev": {
+            "type": "string",
+            "nullable": true
+          },
+          "next": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}
