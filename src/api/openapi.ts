@@ -42,6 +42,8 @@ type ComponentName = keyof typeof COMPONENTS;
 type Endpoint = {
   readonly method: 'get' | 'post' | 'patch';
   readonly path: string;
+  /** Stable name for generated clients (e.g. a PHP or TS SDK). */
+  readonly operationId: string;
   readonly summary: string;
   readonly tag: string;
   readonly auth?: boolean;
@@ -58,6 +60,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'post',
     path: '/auth/login',
+    operationId: 'login',
     summary: 'Sign in (Sanctum token)',
     tag: 'Auth',
     auth: false,
@@ -67,6 +70,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'post',
     path: '/auth/logout',
+    operationId: 'logout',
     summary: 'Revoke the current token',
     tag: 'Auth',
     status: 204,
@@ -75,6 +79,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/me',
+    operationId: 'getMe',
     summary: 'Current user, role, scope and permissions',
     tag: 'Auth',
     data: 'User',
@@ -83,6 +88,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/brands',
+    operationId: 'listBrands',
     summary: 'All brands and their themes',
     tag: 'Catalog',
     data: ['Brand'],
@@ -91,6 +97,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/countries',
+    operationId: 'listCountries',
     summary: 'Markets with currency and tax',
     tag: 'Catalog',
     data: ['Country'],
@@ -99,6 +106,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/locations',
+    operationId: 'listLocations',
     summary: 'Locations visible to the user (staff: own scope only)',
     tag: 'Locations',
     data: ['Location'],
@@ -113,6 +121,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/locations/{id}',
+    operationId: 'getLocation',
     summary: 'Location with its spaces (404 outside staff scope)',
     tag: 'Locations',
     data: 'LocationDetail',
@@ -121,6 +130,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/spaces/{id}/availability',
+    operationId: 'getSpaceAvailability',
     summary: 'Slots for a local date, in UTC',
     tag: 'Locations',
     data: 'Availability',
@@ -132,6 +142,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'post',
     path: '/bookings',
+    operationId: 'createBooking',
     summary: 'Book a slot. Re-checks the distance rule server-side',
     tag: 'Bookings',
     body: 'CreateBookingRequest',
@@ -142,6 +153,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/bookings',
+    operationId: 'listMyBookings',
     summary: 'The member’s bookings',
     tag: 'Bookings',
     data: ['Booking'],
@@ -150,6 +162,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/bookings/{id}',
+    operationId: 'getBooking',
     summary: 'One of the member’s bookings',
     tag: 'Bookings',
     data: 'Booking',
@@ -158,6 +171,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'patch',
     path: '/bookings/{id}',
+    operationId: 'cancelBooking',
     summary: 'Cancel (free until 60 minutes before start)',
     tag: 'Bookings',
     body: 'CancelRequest',
@@ -167,6 +181,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'post',
     path: '/bookings/{id}/check-in',
+    operationId: 'checkInBooking',
     summary: 'Member self check-in on site',
     tag: 'Bookings',
     body: 'CheckInRequest',
@@ -176,6 +191,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'get',
     path: '/staff/locations/{id}/bookings',
+    operationId: 'listStaffBookings',
     summary: 'Staff board for a location and local date',
     tag: 'Staff',
     data: ['StaffBooking'],
@@ -191,6 +207,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'post',
     path: '/staff/check-ins',
+    operationId: 'staffCheckIn',
     summary: 'Front-desk check-in by QR token or booking code',
     tag: 'Staff',
     body: 'StaffCheckInRequest',
@@ -200,6 +217,7 @@ const ENDPOINTS: readonly Endpoint[] = [
   {
     method: 'post',
     path: '/staff/walk-ins',
+    operationId: 'createWalkIn',
     summary: 'Book and check in a walk-in guest for today',
     tag: 'Staff',
     body: 'WalkInRequest',
@@ -272,6 +290,7 @@ export function buildOpenApiDocument() {
     const status = e.status ?? 200;
     paths[e.path] ??= {};
     paths[e.path]![e.method] = {
+      operationId: e.operationId,
       tags: [e.tag],
       summary: e.summary,
       ...(e.auth === false ? { security: [] } : {}),

@@ -19,6 +19,7 @@
   "paths": {
     "/auth/login": {
       "post": {
+        "operationId": "login",
         "tags": [
           "Auth"
         ],
@@ -60,6 +61,7 @@
     },
     "/auth/logout": {
       "post": {
+        "operationId": "logout",
         "tags": [
           "Auth"
         ],
@@ -83,6 +85,7 @@
     },
     "/me": {
       "get": {
+        "operationId": "getMe",
         "tags": [
           "Auth"
         ],
@@ -121,6 +124,7 @@
     },
     "/brands": {
       "get": {
+        "operationId": "listBrands",
         "tags": [
           "Catalog"
         ],
@@ -162,6 +166,7 @@
     },
     "/countries": {
       "get": {
+        "operationId": "listCountries",
         "tags": [
           "Catalog"
         ],
@@ -203,6 +208,7 @@
     },
     "/locations": {
       "get": {
+        "operationId": "listLocations",
         "tags": [
           "Locations"
         ],
@@ -291,6 +297,7 @@
     },
     "/locations/{id}": {
       "get": {
+        "operationId": "getLocation",
         "tags": [
           "Locations"
         ],
@@ -349,6 +356,7 @@
     },
     "/spaces/{id}/availability": {
       "get": {
+        "operationId": "getSpaceAvailability",
         "tags": [
           "Locations"
         ],
@@ -426,6 +434,7 @@
     },
     "/bookings": {
       "post": {
+        "operationId": "createBooking",
         "tags": [
           "Bookings"
         ],
@@ -492,6 +501,7 @@
         }
       },
       "get": {
+        "operationId": "listMyBookings",
         "tags": [
           "Bookings"
         ],
@@ -533,6 +543,7 @@
     },
     "/bookings/{id}": {
       "get": {
+        "operationId": "getBooking",
         "tags": [
           "Bookings"
         ],
@@ -589,6 +600,7 @@
         }
       },
       "patch": {
+        "operationId": "cancelBooking",
         "tags": [
           "Bookings"
         ],
@@ -667,6 +679,7 @@
     },
     "/bookings/{id}/check-in": {
       "post": {
+        "operationId": "checkInBooking",
         "tags": [
           "Bookings"
         ],
@@ -745,6 +758,7 @@
     },
     "/staff/locations/{id}/bookings": {
       "get": {
+        "operationId": "listStaffBookings",
         "tags": [
           "Staff"
         ],
@@ -825,6 +839,7 @@
     },
     "/staff/check-ins": {
       "post": {
+        "operationId": "staffCheckIn",
         "tags": [
           "Staff"
         ],
@@ -903,6 +918,7 @@
     },
     "/staff/walk-ins": {
       "post": {
+        "operationId": "createWalkIn",
         "tags": [
           "Staff"
         ],
