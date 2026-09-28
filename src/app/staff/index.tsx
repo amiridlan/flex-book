@@ -4,16 +4,20 @@ import { Text, View } from 'react-native';
 import { firstError } from '@/api/client/api-error';
 import type { StaffBooking } from '@/api/schemas/booking';
 import { CardGrid } from '@/components/ui/card-grid';
-import { Screen, ScreenHeader } from '@/components/ui/screen';
+import { PageHeader } from '@/components/ui/page-header';
+import { Screen } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { checkInWindowOpen } from '@/domain/booking-rules';
 import { useSessionStore } from '@/features/auth/session-store';
+import { LocationDropdown } from '@/features/staff/components/location-dropdown';
 import { LocationSwitcher } from '@/features/staff/components/location-switcher';
 import { StaffBrandScope } from '@/features/staff/components/staff-brand-scope';
 import { StaffBookingRow } from '@/features/staff/components/staff-booking-row';
+import { StaffBookingTable } from '@/features/staff/components/staff-booking-table';
 import { useStaffBookings, useStaffCheckIn } from '@/features/staff/use-staff';
 import { useStaffLocation } from '@/features/staff/use-staff-location';
 import { formatInZone, offsetLabel, TIME_FORMAT } from '@/lib/time';
+import { useLayout } from '@/lib/use-layout';
 import { useNow } from '@/lib/use-now';
 
 type Groups = {
@@ -43,6 +47,7 @@ export default function StaffTodayScreen() {
   const board = useStaffBookings(current?.id);
   const checkIn = useStaffCheckIn();
   const now = useNow(30_000);
+  const { wide } = useLayout();
 
   if (locations.isPending) return <LoadingState label="Loading your locations…" />;
   if (locations.isError) {
@@ -74,7 +79,12 @@ export default function StaffTodayScreen() {
   return (
     <StaffBrandScope>
       <Screen scroll>
-        <ScreenHeader
+        <PageHeader
+          actions={
+            wide ? (
+              <LocationDropdown locations={all} current={current} onSelect={setLocationId} />
+            ) : undefined
+          }
           title={`Today · ${current.name}`}
           subtitle={`${formatInZone(now, current.timezone, 'EEE, dd/MM/yyyy')} · ${formatInZone(
             now,
@@ -82,7 +92,9 @@ export default function StaffTodayScreen() {
             TIME_FORMAT,
           )} ${current.city} (${offsetLabel(current.timezone, now)}) · ${user?.name ?? ''}`}
         />
-        <LocationSwitcher locations={all} currentId={current.id} onSelect={setLocationId} />
+        {wide ? null : (
+          <LocationSwitcher locations={all} currentId={current.id} onSelect={setLocationId} />
+        )}
 
         {board.isPending ? (
           <LoadingState label="Loading today’s bookings…" />
@@ -105,31 +117,42 @@ export default function StaffTodayScreen() {
               </View>
             ) : null}
 
-            <Section title="Arriving now" empty="Nobody due in the next 15 minutes.">
-              {groups.arriving.map((b) => (
-                <StaffBookingRow
-                  key={b.id}
-                  booking={b}
-                  checkingIn={pendingCode === b.code}
-                  onCheckIn={() => checkIn.mutate({ code: b.code })}
-                />
-              ))}
-            </Section>
-            <Section title="Later today" empty="No more bookings today.">
-              {groups.later.map((b) => (
-                <StaffBookingRow key={b.id} booking={b} />
-              ))}
-            </Section>
-            <Section title="Checked in">
-              {groups.inside.map((b) => (
-                <StaffBookingRow key={b.id} booking={b} />
-              ))}
-            </Section>
-            <Section title="No-shows and cancellations">
-              {groups.closed.map((b) => (
-                <StaffBookingRow key={b.id} booking={b} />
-              ))}
-            </Section>
+            {wide ? (
+              <StaffBookingTable
+                bookings={board.data}
+                now={now}
+                pendingCode={pendingCode}
+                onCheckIn={(code) => checkIn.mutate({ code })}
+              />
+            ) : (
+              <>
+                <Section title="Arriving now" empty="Nobody due in the next 15 minutes.">
+                  {groups.arriving.map((b) => (
+                    <StaffBookingRow
+                      key={b.id}
+                      booking={b}
+                      checkingIn={pendingCode === b.code}
+                      onCheckIn={() => checkIn.mutate({ code: b.code })}
+                    />
+                  ))}
+                </Section>
+                <Section title="Later today" empty="No more bookings today.">
+                  {groups.later.map((b) => (
+                    <StaffBookingRow key={b.id} booking={b} />
+                  ))}
+                </Section>
+                <Section title="Checked in">
+                  {groups.inside.map((b) => (
+                    <StaffBookingRow key={b.id} booking={b} />
+                  ))}
+                </Section>
+                <Section title="No-shows and cancellations">
+                  {groups.closed.map((b) => (
+                    <StaffBookingRow key={b.id} booking={b} />
+                  ))}
+                </Section>
+              </>
+            )}
             {noShows > 0 ? (
               <Text className="text-xs text-text-muted">
                 No-shows are released automatically 15 minutes after the start, so the space can be
@@ -147,10 +170,10 @@ function Stat({ label, value }: { readonly label: string; readonly value: number
   return (
     <View
       accessibilityLabel={`${value} ${label}`}
-      className="flex-1 items-center gap-1 rounded-xl bg-primary-soft py-3"
+      className="flex-1 items-center gap-1 rounded-xl bg-primary-soft py-3 lg:items-start lg:border lg:border-border lg:bg-surface lg:px-5 lg:py-4"
     >
-      <Text className="text-xl font-bold text-primary">{value}</Text>
-      <Text className="text-xs text-text">{label}</Text>
+      <Text className="text-xl font-bold text-primary lg:text-[28px] lg:leading-9">{value}</Text>
+      <Text className="text-xs text-text lg:text-sm lg:text-text-muted">{label}</Text>
     </View>
   );
 }

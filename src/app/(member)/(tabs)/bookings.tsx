@@ -4,11 +4,14 @@ import { Text, View } from 'react-native';
 import type { Booking } from '@/api/schemas/booking';
 import { CardGrid } from '@/components/ui/card-grid';
 import { Chip } from '@/components/ui/chip';
-import { Screen, ScreenHeader } from '@/components/ui/screen';
+import { PageHeader } from '@/components/ui/page-header';
+import { Screen } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { BookingCard } from '@/features/booking/components/booking-card';
+import { BookingTable } from '@/features/booking/components/booking-table';
 import { useMyBookings } from '@/features/booking/use-bookings';
 import { useBrands } from '@/features/catalog/use-catalog';
+import { useLayout } from '@/lib/use-layout';
 import { useNow } from '@/lib/use-now';
 
 type Tab = 'upcoming' | 'past';
@@ -22,6 +25,7 @@ function isUpcoming(booking: Booking, now: number): boolean {
 
 export default function BookingsScreen() {
   const [tab, setTab] = useState<Tab>('upcoming');
+  const { wide } = useLayout();
   const bookings = useMyBookings();
   const brands = useBrands();
 
@@ -30,13 +34,21 @@ export default function BookingsScreen() {
   // Upcoming soonest first; past most recent first.
   const sorted = tab === 'upcoming' ? list : [...list].reverse();
 
+  const tabs = (
+    <View className="flex-row gap-2">
+      <Chip label="Upcoming" selected={tab === 'upcoming'} onPress={() => setTab('upcoming')} />
+      <Chip label="Past" selected={tab === 'past'} onPress={() => setTab('past')} />
+    </View>
+  );
+
   return (
     <Screen scroll>
-      <ScreenHeader title="My bookings" />
-      <View className="flex-row gap-2">
-        <Chip label="Upcoming" selected={tab === 'upcoming'} onPress={() => setTab('upcoming')} />
-        <Chip label="Past" selected={tab === 'past'} onPress={() => setTab('past')} />
-      </View>
+      <PageHeader
+        title="My bookings"
+        subtitle={wide ? 'Times are shown in each location’s local time.' : undefined}
+        actions={wide ? tabs : undefined}
+      />
+      {wide ? null : tabs}
 
       {bookings.isPending ? (
         <LoadingState label="Loading bookings…" />
@@ -56,15 +68,19 @@ export default function BookingsScreen() {
           <Text className="text-sm text-text-muted">
             {sorted.length === 1 ? '1 booking' : `${sorted.length} bookings`}
           </Text>
-          <CardGrid>
-            {sorted.map((booking) => (
-              <BookingCard
-                key={booking.id}
-                booking={booking}
-                brand={brands.data?.find((b) => b.id === booking.location.brandId)}
-              />
-            ))}
-          </CardGrid>
+          {wide ? (
+            <BookingTable bookings={sorted} />
+          ) : (
+            <CardGrid>
+              {sorted.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  brand={brands.data?.find((b) => b.id === booking.location.brandId)}
+                />
+              ))}
+            </CardGrid>
+          )}
         </View>
       )}
     </Screen>
