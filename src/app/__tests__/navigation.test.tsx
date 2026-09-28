@@ -21,6 +21,8 @@ import LoginScreen from '../login';
 import StaffTabsLayout from '../staff/_layout';
 import StaffHomeScreen from '../staff/index';
 import StaffProfile from '../staff/profile';
+import StaffScanScreen from '../staff/scan';
+import StaffWalkInScreen from '../staff/walk-in';
 
 const ROUTES = {
   _layout: RootLayout,
@@ -37,6 +39,8 @@ const ROUTES = {
   'staff/_layout': StaffTabsLayout,
   'staff/index': StaffHomeScreen,
   'staff/profile': StaffProfile,
+  'staff/scan': StaffScanScreen,
+  'staff/walk-in': StaffWalkInScreen,
 };
 
 const SLOW = { timeout: 5000 };
@@ -68,8 +72,10 @@ describe('route guards', () => {
 
     await fireEvent.press(await screen.findByLabelText('Sign in as Staff · Hive'));
 
-    expect(await screen.findByText('6 locations in your scope', {}, SLOW)).toBeTruthy();
-    await waitFor(() => expect(screen.queryByText('Menara Aurora')).toBeNull());
+    // Hive staff land on the first Hive location, with a switcher for the other five.
+    expect(await screen.findByText(/Today · Bangsar Loft/, {}, SLOW)).toBeTruthy();
+    expect(screen.getByLabelText('Kallang Works · Singapore')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByText(/Menara Aurora/)).toBeNull());
   });
 
   it('lets a member drill into a location and pick a time', async () => {
@@ -128,5 +134,37 @@ describe('route guards', () => {
     expect(await screen.findByText('You can’t book this from here', {}, SLOW)).toBeTruthy();
     expect(screen.getByText(/from within Malaysia/)).toBeTruthy();
     expect(screen.getByLabelText('Confirm booking')).toBeDisabled();
+  });
+
+  it('shows walk-in validation errors on the right fields', async () => {
+    await renderRouter(ROUTES, { initialUrl: '/login' });
+    await fireEvent.press(await screen.findByLabelText('Sign in as Staff · Hive'));
+    await screen.findByText(/Today · Bangsar Loft/, {}, SLOW);
+
+    await fireEvent.press(screen.getByText('Walk-in'));
+    await fireEvent.press(await screen.findByLabelText('Book and check in', {}, SLOW));
+
+    expect(await screen.findByText('Choose a space.')).toBeTruthy();
+    expect(screen.getByText('Enter the guest’s name.')).toBeTruthy();
+    expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
+  });
+
+  it('lets staff check in by typing a booking code', async () => {
+    await renderRouter(ROUTES, { initialUrl: '/login' });
+    await fireEvent.press(await screen.findByLabelText('Sign in as Staff · Hive'));
+    await screen.findByText(/Today · Bangsar Loft/, {}, SLOW);
+
+    await fireEvent.press(screen.getByText('Scan'));
+    expect(await screen.findByText('Camera access needed to scan')).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByLabelText('Booking code'), 'nope');
+    await fireEvent.press(screen.getByLabelText('Check in with code'));
+    expect(await screen.findByText('Enter a code like FXB-7QLM.')).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByLabelText('Booking code'), 'fxb-zzzz');
+    await fireEvent.press(screen.getByLabelText('Check in with code'));
+    expect(
+      await screen.findByText('No booking with that code at your locations.', {}, SLOW),
+    ).toBeTruthy();
   });
 });

@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 
-import { errorMessage, isApiError } from '@/api/client/api-error';
+import { firstError } from '@/api/client/api-error';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
@@ -62,11 +62,7 @@ export default function BookingReviewScreen() {
   const tax = taxMinor(subtotal, country.tax.rateBp);
   const currency = space.rate.price.currency;
 
-  const serverFieldError = isApiError(createBooking.error)
-    ? (Object.values(createBooking.error.fieldErrors)[0]?.[0] ?? createBooking.error.message)
-    : createBooking.error
-      ? errorMessage(createBooking.error)
-      : null;
+  const serverFieldError = firstError(createBooking.error);
 
   function confirm() {
     createBooking.mutate(

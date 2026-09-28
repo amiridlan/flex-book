@@ -2,12 +2,18 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
-import { errorMessage, isApiError } from '@/api/client/api-error';
+import { firstError } from '@/api/client/api-error';
 import { QrCode } from '@/components/qr-code';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ErrorState, LoadingState } from '@/components/ui/state-views';
-import { canCancel, checkInWindowOpen, CHECK_IN_OPENS_MIN } from '@/domain/booking-rules';
+import {
+  canCancel,
+  checkInWindowOpen,
+  CHECK_IN_OPENS_MIN,
+  NO_SHOW_GRACE_MIN,
+} from '@/domain/booking-rules';
+import { buildCheckInPayload } from '@/domain/check-in-payload';
 import { PriceBreakdown } from '@/features/booking/components/price-breakdown';
 import { StatusPill } from '@/features/booking/components/status-pill';
 import { useBooking, useCancelBooking, useCheckIn } from '@/features/booking/use-bookings';
@@ -16,17 +22,6 @@ import { useDeviceLocation } from '@/features/device-location/use-device-locatio
 import { deviceTimeZone, formatInZone, sameOffset, TIME_FORMAT } from '@/lib/time';
 import { useNow } from '@/lib/use-now';
 import { BrandThemeScope } from '@/theme/brand-theme';
-
-/** Payload of the check-in QR. Staff scanners (P4) parse this deep link. */
-export function checkInPayload(bookingId: string, token: string): string {
-  return `flexbook://check-in/${bookingId}?token=${token}`;
-}
-
-function firstError(error: unknown): string | null {
-  if (!error) return null;
-  if (isApiError(error)) return Object.values(error.fieldErrors)[0]?.[0] ?? error.message;
-  return errorMessage(error);
-}
 
 export default function BookingDetailScreen() {
   const { id, confirmed } = useLocalSearchParams<{ id: string; confirmed?: string }>();
@@ -51,7 +46,7 @@ export default function BookingDetailScreen() {
   const tz = b.location.timezone;
   const device_tz = deviceTimeZone();
   const upcoming = b.status === 'confirmed' && Date.parse(b.endsAt) > now;
-  const windowOpen = checkInWindowOpen(b.startsAt, b.endsAt, now);
+  const windowOpen = checkInWindowOpen(b.startsAt, now);
   const fix = device.state.status === 'ready' ? device.state.fix : null;
   const actionError = firstError(checkIn.error) ?? firstError(cancel.error);
 
@@ -100,7 +95,7 @@ export default function BookingDetailScreen() {
           <Card>
             <Text className="text-center text-sm font-semibold text-text">Check-in QR code</Text>
             <QrCode
-              value={checkInPayload(b.id, b.qrToken)}
+              value={buildCheckInPayload({ bookingId: b.id, token: b.qrToken })}
               accessibilityLabel={`Check-in QR code for booking ${b.code}`}
             />
             <Text className="text-center text-xs text-text-muted">
@@ -145,7 +140,8 @@ export default function BookingDetailScreen() {
             />
             {!windowOpen ? (
               <Text className="text-center text-xs text-text-muted">
-                Check-in opens {CHECK_IN_OPENS_MIN} minutes before the start.
+                Check-in is open from {CHECK_IN_OPENS_MIN} minutes before to {NO_SHOW_GRACE_MIN}{' '}
+                minutes after the start. After that the space is released.
               </Text>
             ) : null}
 

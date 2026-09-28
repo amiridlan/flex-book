@@ -11,6 +11,14 @@ export default function StaffTabsLayout() {
         options={{ title: 'Today', tabBarIcon: tabIcon('today-outline') }}
       />
       <Tabs.Screen
+        name="scan"
+        options={{ title: 'Scan', tabBarIcon: tabIcon('qr-code-outline') }}
+      />
+      <Tabs.Screen
+        name="walk-in"
+        options={{ title: 'Walk-in', tabBarIcon: tabIcon('person-add-outline') }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{ title: 'Profile', tabBarIcon: tabIcon('person-circle-outline') }}
       />

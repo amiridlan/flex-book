@@ -12,6 +12,8 @@ type ButtonProps = {
   readonly disabled?: boolean;
   /** Screen-reader hint when the label alone is not enough. */
   readonly accessibilityHint?: string;
+  /** Overrides the spoken label, e.g. "Check in Hafiz Aziz" when a list repeats "Check in". */
+  readonly accessibilityLabel?: string;
 };
 
 const CONTAINER: Readonly<Record<ButtonVariant, string>> = {
@@ -33,12 +35,13 @@ export function Button({
   loading = false,
   disabled = false,
   accessibilityHint,
+  accessibilityLabel,
 }: ButtonProps) {
   const inactive = disabled || loading;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}

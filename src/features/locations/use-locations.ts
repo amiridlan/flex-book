@@ -23,6 +23,8 @@ export function useAvailability(spaceId: string, date: string) {
   return useQuery({
     queryKey: queryKeys.availability(spaceId, date),
     queryFn: () => spaceRepository.availability(spaceId, date),
+    // Forms render this before a space is chosen; don't request `/spaces//availability`.
+    enabled: spaceId !== '' && date !== '',
     staleTime: 0,
   });
 }
