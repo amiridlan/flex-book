@@ -36,6 +36,12 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "FlexiSpace uses your location when you book or check in, to confirm you are near the space. This prevents fake bookings."
+        }
       ]
     ],
     "experiments": {
