@@ -4,6 +4,7 @@ import {
   canCancel,
   checkBookingRule,
   checkInWindowOpen,
+  isPastNoShowGrace,
   withinCheckInRadius,
 } from '../booking-rules';
 import { distanceKm, marketAt } from '../geo';
@@ -88,17 +89,22 @@ describe('checkBookingRule', () => {
 
 describe('cancellation and check-in', () => {
   const start = '2026-09-29T08:00:00.000Z';
-  const end = '2026-09-29T09:00:00.000Z';
 
   it('allows free cancellation until 1 hour before', () => {
     expect(canCancel(start, Date.parse('2026-09-29T06:59:00Z'))).toBe(true);
     expect(canCancel(start, Date.parse('2026-09-29T07:01:00Z'))).toBe(false);
   });
 
-  it('opens check-in 15 minutes before start until the end', () => {
-    expect(checkInWindowOpen(start, end, Date.parse('2026-09-29T07:44:00Z'))).toBe(false);
-    expect(checkInWindowOpen(start, end, Date.parse('2026-09-29T07:46:00Z'))).toBe(true);
-    expect(checkInWindowOpen(start, end, Date.parse('2026-09-29T09:00:00Z'))).toBe(false);
+  it('opens check-in 15 minutes either side of the start', () => {
+    expect(checkInWindowOpen(start, Date.parse('2026-09-29T07:44:00Z'))).toBe(false);
+    expect(checkInWindowOpen(start, Date.parse('2026-09-29T07:46:00Z'))).toBe(true);
+    expect(checkInWindowOpen(start, Date.parse('2026-09-29T08:15:00Z'))).toBe(true);
+    expect(checkInWindowOpen(start, Date.parse('2026-09-29T08:16:00Z'))).toBe(false);
+  });
+
+  it('treats a booking as a no-show 15 minutes after the start', () => {
+    expect(isPastNoShowGrace(start, Date.parse('2026-09-29T08:15:00Z'))).toBe(false);
+    expect(isPastNoShowGrace(start, Date.parse('2026-09-29T08:16:00Z'))).toBe(true);
   });
 
   it('requires being on site to check in by location', () => {

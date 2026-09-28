@@ -51,11 +51,22 @@ export function canCancel(startsAt: string, now: number = Date.now()): boolean {
   return Date.parse(startsAt) - now >= CANCELLATION_CUTOFF_MIN * 60_000;
 }
 
-/** Check-in opens this many minutes before the start and closes at the end. */
+/** Check-in opens this many minutes before the start. */
 export const CHECK_IN_OPENS_MIN = 15;
 
-export function checkInWindowOpen(startsAt: string, endsAt: string, now: number = Date.now()) {
-  return now >= Date.parse(startsAt) - CHECK_IN_OPENS_MIN * 60_000 && now < Date.parse(endsAt);
+/**
+ * Grace period after the start. A booking not checked in by then is a no-show
+ * and its space is released for walk-ins (the anti-fake-booking backstop).
+ */
+export const NO_SHOW_GRACE_MIN = 15;
+
+export function checkInWindowOpen(startsAt: string, now: number = Date.now()): boolean {
+  const start = Date.parse(startsAt);
+  return now >= start - CHECK_IN_OPENS_MIN * 60_000 && now <= start + NO_SHOW_GRACE_MIN * 60_000;
+}
+
+export function isPastNoShowGrace(startsAt: string, now: number = Date.now()): boolean {
+  return now > Date.parse(startsAt) + NO_SHOW_GRACE_MIN * 60_000;
 }
 
 /** Geo check-in needs the device within the location's check-in radius (200 m). */
