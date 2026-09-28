@@ -11,10 +11,11 @@ import { Chip } from '@/components/ui/chip';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { TextField } from '@/components/ui/text-field';
-import { SlotPicker } from '@/features/locations/components/slot-picker';
+import { DayPassPicker, SlotPicker } from '@/features/locations/components/slot-picker';
 import { priceLabel } from '@/features/locations/space-labels';
 import { useAvailability, useLocation } from '@/features/locations/use-locations';
 import { LocationSwitcher } from '@/features/staff/components/location-switcher';
+import { StaffBrandScope } from '@/features/staff/components/staff-brand-scope';
 import { useWalkIn } from '@/features/staff/use-staff';
 import { useStaffLocation } from '@/features/staff/use-staff-location';
 import { applyServerErrors } from '@/lib/form-errors';
@@ -50,15 +51,17 @@ export default function StaffWalkInScreen() {
   }
 
   return (
-    <Screen scroll>
-      <ScreenHeader
-        title="Walk-in booking"
-        subtitle={`${current.name}, ${current.city} · today · checked in on save`}
-      />
-      <LocationSwitcher locations={all} currentId={current.id} onSelect={setLocationId} />
-      {/* Keyed by location so switching resets the form. */}
-      <WalkInFormView key={current.id} locationId={current.id} timeZone={current.timezone} />
-    </Screen>
+    <StaffBrandScope>
+      <Screen scroll>
+        <ScreenHeader
+          title="Walk-in booking"
+          subtitle={`${current.name}, ${current.city} · today · checked in on save`}
+        />
+        <LocationSwitcher locations={all} currentId={current.id} onSelect={setLocationId} />
+        {/* Keyed by location so switching resets the form. */}
+        <WalkInFormView key={current.id} locationId={current.id} timeZone={current.timezone} />
+      </Screen>
+    </StaffBrandScope>
   );
 }
 
@@ -172,15 +175,23 @@ function WalkInFormView({ locationId, timeZone }: { locationId: string; timeZone
                   error={availability.error}
                   onRetry={() => void availability.refetch()}
                 />
-              ) : availability.data.slots.some((s) => s.available) ? (
+              ) : !availability.data.slots.some((s) => s.available) ? (
+                <Text className="text-sm text-text-muted">No free times left today.</Text>
+              ) : spaces.find((s) => s.id === spaceId)?.rate.unit === 'day' &&
+                availability.data.slots[0] ? (
+                <DayPassPicker
+                  slot={availability.data.slots[0]}
+                  timeZone={timeZone}
+                  selected={field.value === availability.data.slots[0].startsAt}
+                  onSelect={(slot) => field.onChange(slot.startsAt)}
+                />
+              ) : (
                 <SlotPicker
                   slots={availability.data.slots}
                   timeZone={timeZone}
                   selected={field.value || null}
                   onSelect={(slot) => field.onChange(slot.startsAt)}
                 />
-              ) : (
-                <Text className="text-sm text-text-muted">No free times left today.</Text>
               )}
               {errors.slotStart ? (
                 <Text className="text-sm text-danger">{errors.slotStart.message}</Text>

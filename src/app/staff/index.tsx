@@ -7,14 +7,13 @@ import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { checkInWindowOpen } from '@/domain/booking-rules';
 import { useSessionStore } from '@/features/auth/session-store';
-import { useBrands } from '@/features/catalog/use-catalog';
 import { LocationSwitcher } from '@/features/staff/components/location-switcher';
+import { StaffBrandScope } from '@/features/staff/components/staff-brand-scope';
 import { StaffBookingRow } from '@/features/staff/components/staff-booking-row';
 import { useStaffBookings, useStaffCheckIn } from '@/features/staff/use-staff';
 import { useStaffLocation } from '@/features/staff/use-staff-location';
 import { formatInZone, offsetLabel, TIME_FORMAT } from '@/lib/time';
 import { useNow } from '@/lib/use-now';
-import { BrandThemeScope } from '@/theme/brand-theme';
 
 type Groups = {
   arriving: StaffBooking[];
@@ -39,7 +38,6 @@ function groupBookings(bookings: readonly StaffBooking[], now: number): Groups {
 
 export default function StaffTodayScreen() {
   const user = useSessionStore((s) => s.user);
-  const brands = useBrands();
   const { locations, all, current, setLocationId } = useStaffLocation();
   const board = useStaffBookings(current?.id);
   const checkIn = useStaffCheckIn();
@@ -73,10 +71,7 @@ export default function StaffTodayScreen() {
       : null;
 
   return (
-    <BrandThemeScope
-      theme={brands.data?.find((b) => b.id === current.brandId)?.theme}
-      className="flex-1"
-    >
+    <StaffBrandScope>
       <Screen scroll>
         <ScreenHeader
           title={`Today · ${current.name}`}
@@ -143,7 +138,7 @@ export default function StaffTodayScreen() {
           </View>
         )}
       </Screen>
-    </BrandThemeScope>
+    </StaffBrandScope>
   );
 }
 
