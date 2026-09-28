@@ -10,6 +10,7 @@ import { createBookingRepository } from './repositories/booking-repository';
 import { createCatalogRepository } from './repositories/catalog-repository';
 import { createLocationRepository } from './repositories/location-repository';
 import { createSpaceRepository } from './repositories/space-repository';
+import { createStaffRepository } from './repositories/staff-repository';
 
 function createTransport(): HttpTransport {
   if (env.apiMode === 'http' && env.apiBaseUrl) return createFetchTransport(env.apiBaseUrl);
@@ -28,3 +29,4 @@ export const catalogRepository = createCatalogRepository(apiClient);
 export const locationRepository = createLocationRepository(apiClient);
 export const spaceRepository = createSpaceRepository(apiClient);
 export const bookingRepository = createBookingRepository(apiClient);
+export const staffRepository = createStaffRepository(apiClient);

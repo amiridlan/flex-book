@@ -16,4 +16,8 @@ export const queryKeys = {
     mine: ['bookings', 'mine'] as const,
     detail: (id: string) => ['bookings', 'detail', id] as const,
   },
+  staff: {
+    all: ['staff'] as const,
+    bookings: (locationId: string) => ['staff', 'bookings', locationId] as const,
+  },
 };

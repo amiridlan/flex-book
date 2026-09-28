@@ -62,3 +62,25 @@ export const checkInSchema = z.object({
   method: z.literal('geo'),
   device: deviceFixSchema.nullable(),
 });
+
+/** A booking as staff see it: no QR token, and a masked customer email. */
+export const staffBookingSchema = bookingSchema.extend({
+  customer: z.object({ name: z.string(), emailMasked: z.string() }),
+});
+export type StaffBooking = z.infer<typeof staffBookingSchema>;
+
+/** Front-desk check-in: a scanned QR (booking id + token) or a typed booking code. */
+export const staffCheckInSchema = z.union([
+  z.object({ bookingId: z.string().min(1), token: z.string().min(1) }),
+  z.object({ code: z.string().regex(/^FXB-[A-Z2-9]{4}$/, 'Enter a code like FXB-7QLM.') }),
+]);
+export type StaffCheckInInput = z.infer<typeof staffCheckInSchema>;
+
+export const walkInSchema = z.object({
+  spaceId: z.string().min(1, 'Choose a space.'),
+  startsAt: isoDateTimeSchema,
+  endsAt: isoDateTimeSchema,
+  guestName: z.string().trim().min(2, 'Enter the guest’s name.').max(80),
+  guestEmail: z.email('Enter a valid email address.'),
+});
+export type WalkInInput = z.infer<typeof walkInSchema>;

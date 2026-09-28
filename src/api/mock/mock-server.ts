@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 import type { HttpRequest, HttpResponse, HttpTransport } from '../client/transport';
-import { checkInSchema, createBookingSchema } from '../schemas/booking';
+import {
+  checkInSchema,
+  createBookingSchema,
+  staffCheckInSchema,
+  walkInSchema,
+} from '../schemas/booking';
 import type { Location } from '../schemas/location';
 import type { User } from '../schemas/user';
 import { canSeeLocation } from './access';
@@ -52,8 +57,7 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
   const sessions = new Map<string, string>(); // token -> user id
   const router = createRouter();
   const bookings = createBookingStore(random, now);
-  const member = USERS.find((u) => u.role === 'member');
-  if (member) bookings.seed(member);
+  bookings.seed(USERS.find((u) => u.role === 'member'));
 
   function currentUser(request: HttpRequest): User | null {
     const header = request.headers?.Authorization ?? '';
@@ -210,6 +214,51 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       const body = checkInSchema.safeParse(request.body);
       if (!body.success) return validationError(fieldErrors(body.error.issues));
       return bookings.checkIn(user, params.id ?? '', body.data.device);
+    }),
+  );
+
+  /** Staff endpoints require `staff.dashboard`; scope is enforced per location in the store. */
+  function staffOnly(
+    handler: (
+      user: User,
+      request: HttpRequest,
+      params: Readonly<Record<string, string>>,
+    ) => HttpResponse,
+  ) {
+    return authed((user, request, params) =>
+      user.permissions.includes('staff.dashboard')
+        ? handler(user, request, params)
+        : json(403, { message: 'Staff access only.' }),
+    );
+  }
+
+  router.on(
+    'GET',
+    '/staff/locations/:id/bookings',
+    staffOnly((user, request, params) => {
+      const query = z.object({ date: z.iso.date().optional() }).safeParse(request.query ?? {});
+      if (!query.success) return validationError({ date: ['Invalid date.'] });
+      return bookings.staffList(user, params.id ?? '', query.data.date);
+    }),
+  );
+
+  router.on(
+    'POST',
+    '/staff/check-ins',
+    staffOnly((user, request) => {
+      const body = staffCheckInSchema.safeParse(request.body);
+      if (!body.success) return validationError({ code: ['Enter a code like FXB-7QLM.'] });
+      return bookings.staffCheckIn(user, body.data);
+    }),
+  );
+
+  router.on(
+    'POST',
+    '/staff/walk-ins',
+    staffOnly((user, request) => {
+      const body = walkInSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      return bookings.walkIn(user, body.data);
     }),
   );
 

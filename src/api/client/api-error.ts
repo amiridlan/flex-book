@@ -47,3 +47,10 @@ export function errorMessage(error: unknown): string {
   if (isApiError(error)) return error.message;
   return 'Something went wrong. Please try again.';
 }
+
+/** The most specific message for a banner: the first 422 field error, else the error message. */
+export function firstError(error: unknown): string | null {
+  if (!error) return null;
+  if (isApiError(error)) return Object.values(error.fieldErrors)[0]?.[0] ?? error.message;
+  return errorMessage(error);
+}
