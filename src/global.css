@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Design tokens. Values are space-separated RGB channels so Tailwind can apply
+ * opacity (`bg-primary/10`). Brand screens override the --color-primary* set at
+ * runtime with NativeWind `vars()` (see src/theme/brand-theme.tsx).
+ */
+:root {
+  --color-primary: 15 118 110;
+  --color-on-primary: 255 255 255;
+  --color-primary-soft: 204 251 241;
+
+  --color-background: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 241 245 249;
+  --color-border: 226 232 240;
+
+  --color-text: 15 23 42;
+  --color-text-muted: 71 85 105;
+
+  --color-danger: 185 28 28;
+  --color-danger-soft: 254 226 226;
+  --color-success: 21 128 61;
+  --color-success-soft: 220 252 231;
+  --color-warning: 161 98 7;
+  --color-warning-soft: 254 243 199;
+}
