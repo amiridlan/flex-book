@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { env } from '@/config/env';
 import { useBrands } from '@/features/catalog/use-catalog';
+import { DemoLocationPicker } from '@/features/device-location/demo-location-picker';
 import { useLocations } from '@/features/locations/use-locations';
 
 import { ROLE_LABELS } from './permissions';
@@ -54,6 +55,8 @@ export function ProfileScreen() {
           value={env.apiMode === 'mock' ? 'Mock API (demo data)' : 'Live API'}
         />
       </Card>
+
+      {env.apiMode === 'mock' ? <DemoLocationPicker /> : null}
 
       <Button
         label="Sign out"
