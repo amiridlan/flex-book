@@ -6,7 +6,9 @@ import type { Slot } from '@/api/schemas/availability';
 import type { LocationDetail } from '@/api/schemas/location';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
+import { TwoColumn } from '@/components/ui/two-column';
 import { useBrands, useCountries } from '@/features/catalog/use-catalog';
 import { DateStrip } from '@/features/locations/components/date-strip';
 import { DayPassPicker, SlotPicker } from '@/features/locations/components/slot-picker';
@@ -26,6 +28,7 @@ import {
   zonedInstant,
   type LocalDate,
 } from '@/lib/time';
+import { useLayout } from '@/lib/use-layout';
 import { BrandThemeScope } from '@/theme/brand-theme';
 
 const DAYS_AHEAD = 14;
@@ -57,6 +60,7 @@ function SpacePicker({ location, spaceId }: { location: LocationDetail; spaceId:
   const [selected, setSelected] = useState<Slot | null>(null);
   const availability = useAvailability(spaceId, date);
   const router = useRouter();
+  const { wide } = useLayout();
 
   if (!space) return null;
 
@@ -73,107 +77,153 @@ function SpacePicker({ location, spaceId }: { location: LocationDetail; spaceId:
     setSelected(null);
   }
 
+  const zoneBanner = zoneDiffers ? (
+    <View accessibilityRole="text" className="rounded-xl bg-warning-soft p-3">
+      <Text className="text-sm text-text">
+        Times are in {location.city} time ({offsetLabel(location.timezone, middayOfDate)}). Your
+        phone is on {offsetLabel(device, middayOfDate)}.
+        {dstChange ? ` ${location.city} clocks change for daylight saving before this date.` : ''}
+      </Text>
+    </View>
+  ) : null;
+
+  const picker = (
+    <>
+      <DateStrip dates={dates} selected={date} onSelect={chooseDate} />
+
+      {availability.isPending ? (
+        <LoadingState label="Checking availability…" />
+      ) : availability.isError ? (
+        <ErrorState error={availability.error} onRetry={() => void availability.refetch()} />
+      ) : !availability.data.bookable ? (
+        <Card>
+          <Text className="text-base font-semibold text-text">Arranged with our team</Text>
+          <Text className="text-sm text-text-muted">
+            Private offices are set up to suit your team. Our community team will contact you to
+            arrange a viewing.
+          </Text>
+        </Card>
+      ) : !availability.data.open ? (
+        <EmptyState
+          title={`Closed on ${WEEKDAY_NAMES[weekdayIndex(date)]}`}
+          message="Pick another day."
+        />
+      ) : space.rate.unit === 'day' && availability.data.slots[0] ? (
+        <DayPassPicker
+          slot={availability.data.slots[0]}
+          timeZone={location.timezone}
+          selected={selected?.startsAt === availability.data.slots[0].startsAt}
+          onSelect={setSelected}
+        />
+      ) : availability.data.slots.every((s) => !s.available) ? (
+        <EmptyState title="Fully booked" message="Try another day." />
+      ) : (
+        <SlotPicker
+          slots={availability.data.slots}
+          timeZone={location.timezone}
+          selected={selected?.startsAt ?? null}
+          onSelect={setSelected}
+        />
+      )}
+    </>
+  );
+
+  const summary = selected ? (
+    <Card>
+      <Text className="text-sm font-semibold uppercase tracking-wide text-primary">
+        Your selection
+      </Text>
+      <Text className="text-base font-semibold text-text">{longDateLabel(date)}</Text>
+      <Text className="text-base text-text">
+        {formatInZone(selected.startsAt, location.timezone, TIME_FORMAT)} –{' '}
+        {formatInZone(selected.endsAt, location.timezone, TIME_FORMAT)} ({location.city} time)
+      </Text>
+      {zoneDiffers ? (
+        <Text className="text-sm text-text-muted">
+          That is {formatInZone(selected.startsAt, device, `EEE ${TIME_FORMAT}`)} –{' '}
+          {formatInZone(selected.endsAt, device, TIME_FORMAT)} on your phone.
+        </Text>
+      ) : null}
+      <Text className="text-base text-text">
+        {formatMoney(space.rate.price)}
+        {country?.tax.label ? ` + ${country.tax.label}` : ''}
+      </Text>
+      <Button
+        label="Continue"
+        onPress={() =>
+          router.push({
+            pathname: '/locations/[id]/spaces/[spaceId]/review',
+            params: {
+              id: location.id,
+              spaceId,
+              startsAt: selected.startsAt,
+              endsAt: selected.endsAt,
+            },
+          })
+        }
+      />
+    </Card>
+  ) : null;
+
   return (
     <BrandThemeScope theme={brand?.theme} className="flex-1">
       <Stack.Screen options={{ title: space.name }} />
-      <ScrollView contentContainerClassName="w-full max-w-2xl self-center gap-5 p-4 pb-10 lg:p-8">
-        <View className="gap-1">
-          <Text accessibilityRole="header" className="text-2xl font-bold text-text">
-            {space.name}
-          </Text>
-          <Text className="text-base text-text-muted">
-            {location.name}, {location.city}
-          </Text>
-          <Text className="text-sm text-text-muted">
-            {capacityLabel(space)} · {priceLabel(space)}
-          </Text>
-        </View>
-
-        {zoneDiffers ? (
-          <View accessibilityRole="text" className="rounded-xl bg-warning-soft p-3">
-            <Text className="text-sm text-text">
-              Times are in {location.city} time ({offsetLabel(location.timezone, middayOfDate)}).
-              Your phone is on {offsetLabel(device, middayOfDate)}.
-              {dstChange
-                ? ` ${location.city} clocks change for daylight saving before this date.`
-                : ''}
-            </Text>
-          </View>
-        ) : null}
-
-        <DateStrip dates={dates} selected={date} onSelect={chooseDate} />
-
-        {availability.isPending ? (
-          <LoadingState label="Checking availability…" />
-        ) : availability.isError ? (
-          <ErrorState error={availability.error} onRetry={() => void availability.refetch()} />
-        ) : !availability.data.bookable ? (
-          <Card>
-            <Text className="text-base font-semibold text-text">Arranged with our team</Text>
-            <Text className="text-sm text-text-muted">
-              Private offices are set up to suit your team. Our community team will contact you to
-              arrange a viewing.
-            </Text>
-          </Card>
-        ) : !availability.data.open ? (
-          <EmptyState
-            title={`Closed on ${WEEKDAY_NAMES[weekdayIndex(date)]}`}
-            message="Pick another day."
-          />
-        ) : space.rate.unit === 'day' && availability.data.slots[0] ? (
-          <DayPassPicker
-            slot={availability.data.slots[0]}
-            timeZone={location.timezone}
-            selected={selected?.startsAt === availability.data.slots[0].startsAt}
-            onSelect={setSelected}
-          />
-        ) : availability.data.slots.every((s) => !s.available) ? (
-          <EmptyState title="Fully booked" message="Try another day." />
-        ) : (
-          <SlotPicker
-            slots={availability.data.slots}
-            timeZone={location.timezone}
-            selected={selected?.startsAt ?? null}
-            onSelect={setSelected}
-          />
-        )}
-
-        {selected ? (
-          <Card>
-            <Text className="text-sm font-semibold uppercase tracking-wide text-primary">
-              Your selection
-            </Text>
-            <Text className="text-base font-semibold text-text">{longDateLabel(date)}</Text>
-            <Text className="text-base text-text">
-              {formatInZone(selected.startsAt, location.timezone, TIME_FORMAT)} –{' '}
-              {formatInZone(selected.endsAt, location.timezone, TIME_FORMAT)} ({location.city} time)
-            </Text>
-            {zoneDiffers ? (
-              <Text className="text-sm text-text-muted">
-                That is {formatInZone(selected.startsAt, device, `EEE ${TIME_FORMAT}`)} –{' '}
-                {formatInZone(selected.endsAt, device, TIME_FORMAT)} on your phone.
-              </Text>
-            ) : null}
-            <Text className="text-base text-text">
-              {formatMoney(space.rate.price)}
-              {country?.tax.label ? ` + ${country.tax.label}` : ''}
-            </Text>
-            <Button
-              label="Continue"
-              onPress={() =>
-                router.push({
-                  pathname: '/locations/[id]/spaces/[spaceId]/review',
-                  params: {
-                    id: location.id,
-                    spaceId,
-                    startsAt: selected.startsAt,
-                    endsAt: selected.endsAt,
-                  },
-                })
+      <ScrollView contentContainerClassName="w-full max-w-2xl self-center gap-5 p-4 pb-10 lg:max-w-6xl lg:p-8">
+        {wide ? (
+          <>
+            <PageHeader
+              title={space.name}
+              subtitle={`${capacityLabel(space)} · ${priceLabel(space)}`}
+              breadcrumbs={[
+                { label: 'Explore', href: '/' },
+                {
+                  label: location.name,
+                  href: { pathname: '/locations/[id]', params: { id: location.id } },
+                },
+                { label: space.name },
+              ]}
+            />
+            <TwoColumn
+              main={
+                <>
+                  {zoneBanner}
+                  <Text accessibilityRole="header" className="text-lg font-semibold text-text">
+                    Choose a date and time
+                  </Text>
+                  {picker}
+                </>
+              }
+              aside={
+                summary ?? (
+                  <View className="gap-2 rounded-xl border border-dashed border-border p-5">
+                    <Text className="text-base font-semibold text-text">No time chosen yet</Text>
+                    <Text className="text-sm text-text-muted">
+                      Pick a date and a time on the left. The price and the Continue button appear
+                      here.
+                    </Text>
+                  </View>
+                )
               }
             />
-          </Card>
-        ) : null}
+          </>
+        ) : (
+          <>
+            <View className="gap-1">
+              <Text accessibilityRole="header" className="text-2xl font-bold text-text">
+                {space.name}
+              </Text>
+              <Text className="text-base text-text-muted">
+                {location.name}, {location.city}
+              </Text>
+              <Text className="text-sm text-text-muted">
+                {capacityLabel(space)} · {priceLabel(space)}
+              </Text>
+            </View>
+            {zoneBanner}
+            {picker}
+            {summary}
+          </>
+        )}
       </ScrollView>
     </BrandThemeScope>
   );

@@ -22,7 +22,7 @@ export function QrScanner({ onScan, paused }: QrScannerProps) {
         <Text className="text-base font-semibold text-text">Camera access needed to scan</Text>
         <Text className="text-sm text-text-muted">
           The camera is only used on this screen, to read members’ check-in QR codes. You can also
-          type the booking code below.
+          type the booking code instead.
         </Text>
         {permission.canAskAgain ? (
           <Button label="Allow camera" onPress={() => void requestPermission()} />

@@ -2,7 +2,8 @@ import { Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Screen, ScreenHeader } from '@/components/ui/screen';
+import { PageHeader } from '@/components/ui/page-header';
+import { Screen } from '@/components/ui/screen';
 import { env } from '@/config/env';
 import { useBrands } from '@/features/catalog/use-catalog';
 import { DemoLocationPicker } from '@/features/device-location/demo-location-picker';
@@ -30,40 +31,42 @@ export function ProfileScreen() {
   });
 
   return (
-    <Screen scroll width="narrow">
-      <ScreenHeader title={user.name} subtitle={user.email} />
+    <Screen scroll>
+      <PageHeader title={user.name} subtitle={user.email} />
+      {/* Desktop keeps the page full width (header lines up with other pages) but caps the reading column. */}
+      <View className="w-full max-w-2xl gap-5">
+        <Card>
+          <Row label="Role" value={ROLE_LABELS[user.role]} />
+          <View className="gap-1">
+            <Text className="text-sm text-text-muted">Access</Text>
+            {scopeLines.length === 0 ? (
+              <Text className="text-base text-text">All brands and locations</Text>
+            ) : (
+              scopeLines.map((line) => (
+                <Text key={line} className="text-base text-text">
+                  {line}
+                </Text>
+              ))
+            )}
+          </View>
+        </Card>
 
-      <Card>
-        <Row label="Role" value={ROLE_LABELS[user.role]} />
-        <View className="gap-1">
-          <Text className="text-sm text-text-muted">Access</Text>
-          {scopeLines.length === 0 ? (
-            <Text className="text-base text-text">All brands and locations</Text>
-          ) : (
-            scopeLines.map((line) => (
-              <Text key={line} className="text-base text-text">
-                {line}
-              </Text>
-            ))
-          )}
-        </View>
-      </Card>
+        <Card>
+          <Row
+            label="Data source"
+            value={env.apiMode === 'mock' ? 'Mock API (demo data)' : 'Live API'}
+          />
+        </Card>
 
-      <Card>
-        <Row
-          label="Data source"
-          value={env.apiMode === 'mock' ? 'Mock API (demo data)' : 'Live API'}
+        {env.apiMode === 'mock' ? <DemoLocationPicker /> : null}
+
+        <Button
+          label="Sign out"
+          variant="secondary"
+          loading={signOut.isPending}
+          onPress={() => signOut.mutate()}
         />
-      </Card>
-
-      {env.apiMode === 'mock' ? <DemoLocationPicker /> : null}
-
-      <Button
-        label="Sign out"
-        variant="secondary"
-        loading={signOut.isPending}
-        onPress={() => signOut.mutate()}
-      />
+      </View>
     </Screen>
   );
 }

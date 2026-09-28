@@ -8,18 +8,22 @@ import type { StaffBooking } from '@/api/schemas/booking';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Chip } from '@/components/ui/chip';
-import { Screen, ScreenHeader } from '@/components/ui/screen';
+import { PageHeader } from '@/components/ui/page-header';
+import { Screen } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { TextField } from '@/components/ui/text-field';
+import { TwoColumn } from '@/components/ui/two-column';
 import { DayPassPicker, SlotPicker } from '@/features/locations/components/slot-picker';
 import { priceLabel } from '@/features/locations/space-labels';
 import { useAvailability, useLocation } from '@/features/locations/use-locations';
+import { LocationDropdown } from '@/features/staff/components/location-dropdown';
 import { LocationSwitcher } from '@/features/staff/components/location-switcher';
 import { StaffBrandScope } from '@/features/staff/components/staff-brand-scope';
 import { useWalkIn } from '@/features/staff/use-staff';
 import { useStaffLocation } from '@/features/staff/use-staff-location';
 import { applyServerErrors } from '@/lib/form-errors';
 import { formatInZone, TIME_FORMAT, todayIn } from '@/lib/time';
+import { useLayout } from '@/lib/use-layout';
 
 const walkInFormSchema = z.object({
   spaceId: z.string().min(1, 'Choose a space.'),
@@ -33,6 +37,7 @@ const EMPTY: WalkInForm = { spaceId: '', slotStart: '', guestName: '', guestEmai
 
 export default function StaffWalkInScreen() {
   const { locations, all, current, setLocationId } = useStaffLocation();
+  const { wide } = useLayout();
 
   if (locations.isPending) return <LoadingState />;
   if (locations.isError) {
@@ -52,20 +57,38 @@ export default function StaffWalkInScreen() {
 
   return (
     <StaffBrandScope>
-      <Screen scroll width="narrow">
-        <ScreenHeader
+      <Screen scroll>
+        <PageHeader
           title="Walk-in booking"
           subtitle={`${current.name}, ${current.city} · today · checked in on save`}
+          actions={
+            wide ? (
+              <LocationDropdown locations={all} current={current} onSelect={setLocationId} />
+            ) : undefined
+          }
         />
-        <LocationSwitcher locations={all} currentId={current.id} onSelect={setLocationId} />
+        {wide ? null : (
+          <LocationSwitcher locations={all} currentId={current.id} onSelect={setLocationId} />
+        )}
         {/* Keyed by location so switching resets the form. */}
-        <WalkInFormView key={current.id} locationId={current.id} timeZone={current.timezone} />
+        <WalkInFormView
+          key={current.id}
+          locationId={current.id}
+          timeZone={current.timezone}
+          wide={wide}
+        />
       </Screen>
     </StaffBrandScope>
   );
 }
 
-function WalkInFormView({ locationId, timeZone }: { locationId: string; timeZone: string }) {
+type WalkInFormViewProps = {
+  readonly locationId: string;
+  readonly timeZone: string;
+  readonly wide: boolean;
+};
+
+function WalkInFormView({ locationId, timeZone, wide }: WalkInFormViewProps) {
   const location = useLocation(locationId);
   const walkIn = useWalkIn();
   const [created, setCreated] = useState<StaffBooking | null>(null);
@@ -119,22 +142,24 @@ function WalkInFormView({ locationId, timeZone }: { locationId: string; timeZone
 
   if (created) {
     return (
-      <Card>
-        <Text accessibilityRole="alert" className="text-lg font-bold text-success">
-          {created.customer.name} is booked in and checked in
-        </Text>
-        <Text className="text-sm text-text">
-          {created.space.name} · {formatInZone(created.startsAt, timeZone, TIME_FORMAT)} –{' '}
-          {formatInZone(created.endsAt, timeZone, TIME_FORMAT)}
-        </Text>
-        <Text className="text-xs text-text-muted">Ref {created.code}</Text>
-        <Button label="New walk-in" variant="secondary" onPress={() => setCreated(null)} />
-      </Card>
+      <View className="lg:max-w-xl">
+        <Card>
+          <Text accessibilityRole="alert" className="text-lg font-bold text-success">
+            {created.customer.name} is booked in and checked in
+          </Text>
+          <Text className="text-sm text-text">
+            {created.space.name} · {formatInZone(created.startsAt, timeZone, TIME_FORMAT)} –{' '}
+            {formatInZone(created.endsAt, timeZone, TIME_FORMAT)}
+          </Text>
+          <Text className="text-xs text-text-muted">Ref {created.code}</Text>
+          <Button label="New walk-in" variant="secondary" onPress={() => setCreated(null)} />
+        </Card>
+      </View>
     );
   }
 
-  return (
-    <View className="gap-5">
+  const when = (
+    <>
       <Controller
         control={control}
         name="spaceId"
@@ -200,7 +225,11 @@ function WalkInFormView({ locationId, timeZone }: { locationId: string; timeZone
           )}
         />
       ) : null}
+    </>
+  );
 
+  const guest = (
+    <>
       <Controller
         control={control}
         name="guestName"
@@ -234,7 +263,11 @@ function WalkInFormView({ locationId, timeZone }: { locationId: string; timeZone
           />
         )}
       />
+    </>
+  );
 
+  const submit = (
+    <>
       {errors.root?.server ? (
         <View accessibilityRole="alert" className="rounded-xl bg-danger-soft p-4">
           <Text className="text-sm text-danger">{errors.root.server.message}</Text>
@@ -242,6 +275,40 @@ function WalkInFormView({ locationId, timeZone }: { locationId: string; timeZone
       ) : null}
 
       <Button label="Book and check in" onPress={() => void onSubmit()} loading={isSubmitting} />
+    </>
+  );
+
+  if (wide) {
+    return (
+      <TwoColumn
+        main={
+          <Card>
+            <Text accessibilityRole="header" className="text-lg font-semibold text-text">
+              Space and time
+            </Text>
+            <View className="gap-5">{when}</View>
+          </Card>
+        }
+        aside={
+          <Card>
+            <Text accessibilityRole="header" className="text-lg font-semibold text-text">
+              Guest
+            </Text>
+            <View className="gap-4">
+              {guest}
+              {submit}
+            </View>
+          </Card>
+        }
+      />
+    );
+  }
+
+  return (
+    <View className="gap-5">
+      {when}
+      {guest}
+      {submit}
     </View>
   );
 }

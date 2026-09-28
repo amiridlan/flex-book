@@ -4,13 +4,17 @@ import { Text, View } from 'react-native';
 import { firstError } from '@/api/client/api-error';
 import type { StaffBooking } from '@/api/schemas/booking';
 import { Button } from '@/components/ui/button';
-import { Screen, ScreenHeader } from '@/components/ui/screen';
+import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
+import { TwoColumn } from '@/components/ui/two-column';
 import { normaliseBookingCode, parseCheckInPayload } from '@/domain/check-in-payload';
 import { QrScanner } from '@/features/staff/components/qr-scanner';
 import { StaffBrandScope } from '@/features/staff/components/staff-brand-scope';
 import { useStaffCheckIn } from '@/features/staff/use-staff';
 import { formatInZone, TIME_FORMAT } from '@/lib/time';
+import { useLayout } from '@/lib/use-layout';
 
 type Outcome =
   | { readonly kind: 'success'; readonly booking: StaffBooking }
@@ -21,6 +25,7 @@ export default function StaffScanScreen() {
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState<string | undefined>();
+  const { wide } = useLayout();
 
   const busy = checkIn.isPending || outcome !== null;
 
@@ -57,71 +62,88 @@ export default function StaffScanScreen() {
     checkIn.reset();
   }
 
+  const result = outcome ? (
+    <View
+      accessibilityRole="alert"
+      className={`gap-2 rounded-2xl p-4 ${outcome.kind === 'success' ? 'bg-success-soft' : 'bg-danger-soft'}`}
+    >
+      {outcome.kind === 'success' ? (
+        <>
+          <Text className="text-lg font-bold text-success">
+            {outcome.booking.customer.name} is checked in
+          </Text>
+          <Text className="text-sm text-text">
+            {outcome.booking.space.name} ·{' '}
+            {formatInZone(outcome.booking.startsAt, outcome.booking.location.timezone, TIME_FORMAT)}{' '}
+            – {formatInZone(outcome.booking.endsAt, outcome.booking.location.timezone, TIME_FORMAT)}
+          </Text>
+          <Text className="text-xs text-text-muted">
+            {outcome.booking.location.name} · {outcome.booking.code}
+          </Text>
+        </>
+      ) : (
+        <Text className="text-base font-semibold text-danger">{outcome.message}</Text>
+      )}
+      <Button label="Scan next" variant="secondary" onPress={reset} />
+    </View>
+  ) : null;
+
+  const codeEntry = (
+    <View className="gap-3">
+      <Text accessibilityRole="header" className="text-base font-semibold text-text">
+        Or type the booking code
+      </Text>
+      <TextField
+        label="Booking code"
+        placeholder="FXB-7QLM"
+        autoCapitalize="characters"
+        autoCorrect={false}
+        value={code}
+        onChangeText={setCode}
+        onSubmitEditing={submitCode}
+        error={codeError}
+        editable={!busy}
+        returnKeyType="done"
+      />
+      <Button
+        label="Check in with code"
+        onPress={submitCode}
+        loading={checkIn.isPending}
+        disabled={busy && !checkIn.isPending}
+      />
+    </View>
+  );
+
+  const scanner = <QrScanner onScan={onScan} paused={busy} />;
+
   return (
     <StaffBrandScope>
-      <Screen scroll width="narrow">
-        <ScreenHeader title="Check in a member" subtitle="Scan their booking QR code." />
-
-        <QrScanner onScan={onScan} paused={busy} />
-
-        {outcome ? (
-          <View
-            accessibilityRole="alert"
-            className={`gap-2 rounded-2xl p-4 ${outcome.kind === 'success' ? 'bg-success-soft' : 'bg-danger-soft'}`}
-          >
-            {outcome.kind === 'success' ? (
+      <Screen scroll>
+        <PageHeader
+          title="Check in a member"
+          subtitle={
+            wide
+              ? 'Scan their booking QR code, or type the code from their booking.'
+              : 'Scan their booking QR code.'
+          }
+        />
+        {wide ? (
+          <TwoColumn
+            main={scanner}
+            aside={
               <>
-                <Text className="text-lg font-bold text-success">
-                  {outcome.booking.customer.name} is checked in
-                </Text>
-                <Text className="text-sm text-text">
-                  {outcome.booking.space.name} ·{' '}
-                  {formatInZone(
-                    outcome.booking.startsAt,
-                    outcome.booking.location.timezone,
-                    TIME_FORMAT,
-                  )}{' '}
-                  –{' '}
-                  {formatInZone(
-                    outcome.booking.endsAt,
-                    outcome.booking.location.timezone,
-                    TIME_FORMAT,
-                  )}
-                </Text>
-                <Text className="text-xs text-text-muted">
-                  {outcome.booking.location.name} · {outcome.booking.code}
-                </Text>
+                {result}
+                <Card>{codeEntry}</Card>
               </>
-            ) : (
-              <Text className="text-base font-semibold text-danger">{outcome.message}</Text>
-            )}
-            <Button label="Scan next" variant="secondary" onPress={reset} />
-          </View>
-        ) : null}
-
-        <View className="gap-3">
-          <Text accessibilityRole="header" className="text-base font-semibold text-text">
-            Or type the booking code
-          </Text>
-          <TextField
-            label="Booking code"
-            placeholder="FXB-7QLM"
-            autoCapitalize="characters"
-            autoCorrect={false}
-            value={code}
-            onChangeText={setCode}
-            onSubmitEditing={submitCode}
-            error={codeError}
-            editable={!busy}
-            returnKeyType="done"
+            }
           />
-          <Button
-            label="Check in with code"
-            onPress={submitCode}
-            loading={checkIn.isPending}
-            disabled={busy && !checkIn.isPending}
-          />
-        </View>
+        ) : (
+          <>
+            {scanner}
+            {result}
+            {codeEntry}
+          </>
+        )}
       </Screen>
     </StaffBrandScope>
   );

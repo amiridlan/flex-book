@@ -6,7 +6,9 @@ import { firstError } from '@/api/client/api-error';
 import { QrCode } from '@/components/qr-code';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { ErrorState, LoadingState } from '@/components/ui/state-views';
+import { TwoColumn } from '@/components/ui/two-column';
 import {
   canCancel,
   checkInWindowOpen,
@@ -20,6 +22,7 @@ import { useBooking, useCancelBooking, useCheckIn } from '@/features/booking/use
 import { useBrands } from '@/features/catalog/use-catalog';
 import { useDeviceLocation } from '@/features/device-location/use-device-location';
 import { deviceTimeZone, formatInZone, sameOffset, TIME_FORMAT } from '@/lib/time';
+import { useLayout } from '@/lib/use-layout';
 import { useNow } from '@/lib/use-now';
 import { BrandThemeScope } from '@/theme/brand-theme';
 
@@ -32,6 +35,7 @@ export default function BookingDetailScreen() {
   const device = useDeviceLocation();
   const now = useNow(30_000);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const { wide } = useLayout();
 
   if (booking.isPending) return <LoadingState label="Loading booking…" />;
   if (booking.isError) {
@@ -50,133 +54,189 @@ export default function BookingDetailScreen() {
   const fix = device.state.status === 'ready' ? device.state.fix : null;
   const actionError = firstError(checkIn.error) ?? firstError(cancel.error);
 
+  const banner = confirmed ? (
+    <View accessibilityRole="alert" className="rounded-2xl bg-success-soft p-4">
+      <Text className="text-base font-semibold text-success">You’re booked in!</Text>
+      <Text className="text-sm text-text">
+        Show this QR code at the front desk, or check in on arrival.
+      </Text>
+    </View>
+  ) : null;
+
+  const details = (
+    <Card>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-sm font-semibold text-text-muted">Ref {b.code}</Text>
+        <StatusPill status={b.status} />
+      </View>
+      <Text accessibilityRole="header" className="text-xl font-bold text-text">
+        {b.space.name}
+      </Text>
+      <Text className="text-base text-text-muted">
+        {b.location.name}, {b.location.city}
+      </Text>
+      <Text className="text-base text-text">{formatInZone(b.startsAt, tz, 'EEE, dd/MM/yyyy')}</Text>
+      <Text className="text-base text-text">
+        {formatInZone(b.startsAt, tz, TIME_FORMAT)} – {formatInZone(b.endsAt, tz, TIME_FORMAT)} (
+        {b.location.city} time)
+      </Text>
+      {!sameOffset(tz, device_tz, b.startsAt) ? (
+        <Text className="text-sm text-text-muted">
+          {formatInZone(b.startsAt, device_tz, `EEE ${TIME_FORMAT}`)} on your phone
+        </Text>
+      ) : null}
+    </Card>
+  );
+
+  const pass = (
+    <>
+      {upcoming && b.qrToken ? (
+        <Card>
+          <Text className="text-center text-sm font-semibold text-text">Check-in QR code</Text>
+          <QrCode
+            value={buildCheckInPayload({ bookingId: b.id, token: b.qrToken })}
+            accessibilityLabel={`Check-in QR code for booking ${b.code}`}
+          />
+          <Text className="text-center text-xs text-text-muted">
+            Staff scan this at the front desk.
+          </Text>
+        </Card>
+      ) : null}
+
+      {b.status === 'checked_in' && b.checkedInAt ? (
+        <Card>
+          <Text className="text-base font-semibold text-primary">
+            Checked in at {formatInZone(b.checkedInAt, tz, TIME_FORMAT)}
+          </Text>
+        </Card>
+      ) : null}
+    </>
+  );
+  const hasPass =
+    (upcoming && Boolean(b.qrToken)) || (b.status === 'checked_in' && Boolean(b.checkedInAt));
+
+  const price = (
+    <Card>
+      <PriceBreakdown {...b.price} />
+    </Card>
+  );
+
+  const actions = (
+    <>
+      {actionError ? (
+        <View accessibilityRole="alert" className="rounded-xl bg-danger-soft p-4">
+          <Text className="text-sm text-danger">{actionError}</Text>
+        </View>
+      ) : null}
+
+      {upcoming ? (
+        <View className="gap-3">
+          <Button
+            label="Check in here"
+            disabled={!windowOpen}
+            loading={checkIn.isPending}
+            accessibilityHint={
+              windowOpen
+                ? 'Uses your location to confirm you are on site'
+                : `Opens ${CHECK_IN_OPENS_MIN} minutes before your booking`
+            }
+            onPress={() => {
+              if (device.state.status !== 'ready') void device.refresh();
+              checkIn.mutate({ id: b.id, device: fix });
+            }}
+          />
+          {!windowOpen ? (
+            <Text className="text-center text-xs text-text-muted">
+              Check-in is open from {CHECK_IN_OPENS_MIN} minutes before to {NO_SHOW_GRACE_MIN}{' '}
+              minutes after the start. After that the space is released.
+            </Text>
+          ) : null}
+
+          {canCancel(b.startsAt, now) ? (
+            confirmingCancel ? (
+              <Card>
+                <Text className="text-base font-semibold text-text">Cancel this booking?</Text>
+                <Text className="text-sm text-text-muted">The time slot will be released.</Text>
+                <Button
+                  label="Yes, cancel booking"
+                  loading={cancel.isPending}
+                  onPress={() =>
+                    cancel.mutate(b.id, { onSettled: () => setConfirmingCancel(false) })
+                  }
+                />
+                <Button
+                  label="Keep booking"
+                  variant="ghost"
+                  onPress={() => setConfirmingCancel(false)}
+                />
+              </Card>
+            ) : (
+              <Button
+                label="Cancel booking"
+                variant="secondary"
+                onPress={() => setConfirmingCancel(true)}
+              />
+            )
+          ) : (
+            <Text className="text-center text-xs text-text-muted">
+              Free cancellation has ended for this booking.
+            </Text>
+          )}
+        </View>
+      ) : null}
+    </>
+  );
+
   return (
     <BrandThemeScope
       theme={brands.data?.find((x) => x.id === b.location.brandId)?.theme}
       className="flex-1"
     >
       <Stack.Screen options={{ title: confirmed ? 'Booking confirmed' : 'Booking' }} />
-      <ScrollView contentContainerClassName="w-full max-w-2xl self-center gap-5 p-4 pb-10 lg:p-8">
-        {confirmed ? (
-          <View accessibilityRole="alert" className="rounded-2xl bg-success-soft p-4">
-            <Text className="text-base font-semibold text-success">You’re booked in!</Text>
-            <Text className="text-sm text-text">
-              Show this QR code at the front desk, or check in on arrival.
-            </Text>
-          </View>
-        ) : null}
-
-        <Card>
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm font-semibold text-text-muted">Ref {b.code}</Text>
-            <StatusPill status={b.status} />
-          </View>
-          <Text accessibilityRole="header" className="text-xl font-bold text-text">
-            {b.space.name}
-          </Text>
-          <Text className="text-base text-text-muted">
-            {b.location.name}, {b.location.city}
-          </Text>
-          <Text className="text-base text-text">
-            {formatInZone(b.startsAt, tz, 'EEE, dd/MM/yyyy')}
-          </Text>
-          <Text className="text-base text-text">
-            {formatInZone(b.startsAt, tz, TIME_FORMAT)} – {formatInZone(b.endsAt, tz, TIME_FORMAT)}{' '}
-            ({b.location.city} time)
-          </Text>
-          {!sameOffset(tz, device_tz, b.startsAt) ? (
-            <Text className="text-sm text-text-muted">
-              {formatInZone(b.startsAt, device_tz, `EEE ${TIME_FORMAT}`)} on your phone
-            </Text>
-          ) : null}
-        </Card>
-
-        {upcoming && b.qrToken ? (
-          <Card>
-            <Text className="text-center text-sm font-semibold text-text">Check-in QR code</Text>
-            <QrCode
-              value={buildCheckInPayload({ bookingId: b.id, token: b.qrToken })}
-              accessibilityLabel={`Check-in QR code for booking ${b.code}`}
+      <ScrollView contentContainerClassName="w-full max-w-2xl self-center gap-5 p-4 pb-10 lg:max-w-6xl lg:p-8">
+        {wide ? (
+          <>
+            <PageHeader
+              title={confirmed ? 'Booking confirmed' : b.space.name}
+              subtitle={`${b.location.name}, ${b.location.city} · Ref ${b.code}`}
+              breadcrumbs={[
+                { label: 'My bookings', href: '/bookings' },
+                { label: `Ref ${b.code}` },
+              ]}
+              actions={<StatusPill status={b.status} />}
             />
-            <Text className="text-center text-xs text-text-muted">
-              Staff scan this at the front desk.
-            </Text>
-          </Card>
-        ) : null}
-
-        {b.status === 'checked_in' && b.checkedInAt ? (
-          <Card>
-            <Text className="text-base font-semibold text-primary">
-              Checked in at {formatInZone(b.checkedInAt, tz, TIME_FORMAT)}
-            </Text>
-          </Card>
-        ) : null}
-
-        <Card>
-          <PriceBreakdown {...b.price} />
-        </Card>
-
-        {actionError ? (
-          <View accessibilityRole="alert" className="rounded-xl bg-danger-soft p-4">
-            <Text className="text-sm text-danger">{actionError}</Text>
-          </View>
-        ) : null}
-
-        {upcoming ? (
-          <View className="gap-3">
-            <Button
-              label="Check in here"
-              disabled={!windowOpen}
-              loading={checkIn.isPending}
-              accessibilityHint={
-                windowOpen
-                  ? 'Uses your location to confirm you are on site'
-                  : `Opens ${CHECK_IN_OPENS_MIN} minutes before your booking`
+            <TwoColumn
+              main={
+                <>
+                  {banner}
+                  {details}
+                  {price}
+                  {actions}
+                </>
               }
-              onPress={() => {
-                if (device.state.status !== 'ready') void device.refresh();
-                checkIn.mutate({ id: b.id, device: fix });
-              }}
+              aside={
+                hasPass ? (
+                  pass
+                ) : (
+                  <View className="gap-2 rounded-xl border border-dashed border-border p-5">
+                    <Text className="text-base font-semibold text-text">No check-in code</Text>
+                    <Text className="text-sm text-text-muted">
+                      A QR code only shows for upcoming bookings.
+                    </Text>
+                  </View>
+                )
+              }
             />
-            {!windowOpen ? (
-              <Text className="text-center text-xs text-text-muted">
-                Check-in is open from {CHECK_IN_OPENS_MIN} minutes before to {NO_SHOW_GRACE_MIN}{' '}
-                minutes after the start. After that the space is released.
-              </Text>
-            ) : null}
-
-            {canCancel(b.startsAt, now) ? (
-              confirmingCancel ? (
-                <Card>
-                  <Text className="text-base font-semibold text-text">Cancel this booking?</Text>
-                  <Text className="text-sm text-text-muted">The time slot will be released.</Text>
-                  <Button
-                    label="Yes, cancel booking"
-                    loading={cancel.isPending}
-                    onPress={() =>
-                      cancel.mutate(b.id, { onSettled: () => setConfirmingCancel(false) })
-                    }
-                  />
-                  <Button
-                    label="Keep booking"
-                    variant="ghost"
-                    onPress={() => setConfirmingCancel(false)}
-                  />
-                </Card>
-              ) : (
-                <Button
-                  label="Cancel booking"
-                  variant="secondary"
-                  onPress={() => setConfirmingCancel(true)}
-                />
-              )
-            ) : (
-              <Text className="text-center text-xs text-text-muted">
-                Free cancellation has ended for this booking.
-              </Text>
-            )}
-          </View>
-        ) : null}
+          </>
+        ) : (
+          <>
+            {banner}
+            {details}
+            {pass}
+            {price}
+            {actions}
+          </>
+        )}
       </ScrollView>
     </BrandThemeScope>
   );

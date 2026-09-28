@@ -2,7 +2,9 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
+import { TwoColumn } from '@/components/ui/two-column';
 import { useBrands, useCountries } from '@/features/catalog/use-catalog';
 import { LocalTimeCard } from '@/features/locations/components/local-time-card';
 import { SpaceRow } from '@/features/locations/components/space-row';
@@ -117,15 +119,29 @@ export default function LocationDetailScreen() {
       <Stack.Screen options={{ title: data.name }} />
       <ScrollView contentContainerClassName="w-full max-w-6xl self-center gap-5 p-4 pb-10 lg:p-8">
         {wide ? (
-          // Laptop: details on the left, spaces to book on the right.
-          <View className="flex-row items-start gap-8">
-            <View className="w-2/5 gap-5">
-              {header}
-              {localTime}
-              {details}
-            </View>
-            <View className="flex-1 gap-3">{spaces}</View>
-          </View>
+          // Laptop: page header, spaces to book as the main task, facts in the aside.
+          <>
+            <PageHeader
+              title={data.name}
+              subtitle={data.address}
+              breadcrumbs={[
+                { label: 'Explore', href: '/' },
+                { label: country?.name ?? data.countryCode },
+                { label: data.name },
+              ]}
+              actions={<Badge label={brand?.name ?? data.brandId} />}
+            />
+            <TwoColumn
+              main={spaces}
+              aside={
+                <>
+                  {localTime}
+                  {details}
+                </>
+              }
+              sticky={false}
+            />
+          </>
         ) : (
           // Phone: booking comes before opening hours and amenities.
           <>
