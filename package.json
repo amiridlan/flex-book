@@ -65,7 +65,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test -- --ci",
-    "openapi": "UPDATE_OPENAPI=1 jest src/api/__tests__/openapi.test.ts"
+    "openapi": "UPDATE_OPENAPI=1 jest src/api/__tests__/openapi.test.ts",
+    "seed:export": "UPDATE_FIXTURES=1 jest src/api/__tests__/seed-fixtures.test.ts"
   },
   "private": true,
   "engines": {

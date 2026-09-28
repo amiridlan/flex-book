@@ -1,0 +1,1298 @@
+[
+  {
+    "id": "loc_tcg_kul__hotdesk",
+    "locationId": "loc_tcg_kul",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 5000,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_kul__room-s",
+    "locationId": "loc_tcg_kul",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 6000,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_kul__room-l",
+    "locationId": "loc_tcg_kul",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 15000,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_kul__office",
+    "locationId": "loc_tcg_kul",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 180000,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_kul__hotdesk",
+    "locationId": "loc_hive_kul",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 5500,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_kul__room-s",
+    "locationId": "loc_hive_kul",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 6600,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_kul__room-l",
+    "locationId": "loc_hive_kul",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 16500,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_kul__office",
+    "locationId": "loc_hive_kul",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 198000,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_pen__hotdesk",
+    "locationId": "loc_clustered_pen",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 4500,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_pen__room-s",
+    "locationId": "loc_clustered_pen",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 5400,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_pen__room-l",
+    "locationId": "loc_clustered_pen",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 13500,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_pen__office",
+    "locationId": "loc_clustered_pen",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 162000,
+        "currency": "MYR"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sin__hotdesk",
+    "locationId": "loc_tcg_sin",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 3500,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sin__room-s",
+    "locationId": "loc_tcg_sin",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 5000,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sin__room-l",
+    "locationId": "loc_tcg_sin",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 12000,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sin__office",
+    "locationId": "loc_tcg_sin",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 150000,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_sin__hotdesk",
+    "locationId": "loc_hive_sin",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 3900,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_sin__room-s",
+    "locationId": "loc_hive_sin",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 5500,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_sin__room-l",
+    "locationId": "loc_hive_sin",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 13200,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_sin__office",
+    "locationId": "loc_hive_sin",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 165000,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sin__hotdesk",
+    "locationId": "loc_clustered_sin",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 3200,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sin__room-s",
+    "locationId": "loc_clustered_sin",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 4500,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sin__room-l",
+    "locationId": "loc_clustered_sin",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 10800,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sin__office",
+    "locationId": "loc_clustered_sin",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 135000,
+        "currency": "SGD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_hkg__hotdesk",
+    "locationId": "loc_tcg_hkg",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 22000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_hkg__room-s",
+    "locationId": "loc_tcg_hkg",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 30000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_hkg__room-l",
+    "locationId": "loc_tcg_hkg",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 70000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_hkg__office",
+    "locationId": "loc_tcg_hkg",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 900000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_hkg__hotdesk",
+    "locationId": "loc_hive_hkg",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 24200,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_hkg__room-s",
+    "locationId": "loc_hive_hkg",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 33000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_hkg__room-l",
+    "locationId": "loc_hive_hkg",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 77000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_hkg__office",
+    "locationId": "loc_hive_hkg",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 990000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_hkg__hotdesk",
+    "locationId": "loc_clustered_hkg",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 19800,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_hkg__room-s",
+    "locationId": "loc_clustered_hkg",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 27000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_hkg__room-l",
+    "locationId": "loc_clustered_hkg",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 63000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_hkg__office",
+    "locationId": "loc_clustered_hkg",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 810000,
+        "currency": "HKD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sgn__hotdesk",
+    "locationId": "loc_tcg_sgn",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 250000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sgn__room-s",
+    "locationId": "loc_tcg_sgn",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 350000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sgn__room-l",
+    "locationId": "loc_tcg_sgn",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 800000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_sgn__office",
+    "locationId": "loc_tcg_sgn",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 12000000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_han__hotdesk",
+    "locationId": "loc_hive_han",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 275000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_han__room-s",
+    "locationId": "loc_hive_han",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 385000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_han__room-l",
+    "locationId": "loc_hive_han",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 880000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_han__office",
+    "locationId": "loc_hive_han",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 13200000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sgn__hotdesk",
+    "locationId": "loc_clustered_sgn",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 225000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sgn__room-s",
+    "locationId": "loc_clustered_sgn",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 315000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sgn__room-l",
+    "locationId": "loc_clustered_sgn",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 720000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_sgn__office",
+    "locationId": "loc_clustered_sgn",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 10800000,
+        "currency": "VND"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_bkk__hotdesk",
+    "locationId": "loc_tcg_bkk",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 45000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_bkk__room-s",
+    "locationId": "loc_tcg_bkk",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 60000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_bkk__room-l",
+    "locationId": "loc_tcg_bkk",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 150000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_bkk__office",
+    "locationId": "loc_tcg_bkk",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 1800000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_bkk__hotdesk",
+    "locationId": "loc_hive_bkk",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 49500,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_bkk__room-s",
+    "locationId": "loc_hive_bkk",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 66000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_bkk__room-l",
+    "locationId": "loc_hive_bkk",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 165000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_bkk__office",
+    "locationId": "loc_hive_bkk",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 1980000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_cnx__hotdesk",
+    "locationId": "loc_clustered_cnx",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 40500,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_cnx__room-s",
+    "locationId": "loc_clustered_cnx",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 54000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_cnx__room-l",
+    "locationId": "loc_clustered_cnx",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 135000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_cnx__office",
+    "locationId": "loc_clustered_cnx",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 1620000,
+        "currency": "THB"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_syd__hotdesk",
+    "locationId": "loc_tcg_syd",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 4500,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_syd__room-s",
+    "locationId": "loc_tcg_syd",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 6000,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_syd__room-l",
+    "locationId": "loc_tcg_syd",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 15000,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_tcg_syd__office",
+    "locationId": "loc_tcg_syd",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 200000,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_mel__hotdesk",
+    "locationId": "loc_hive_mel",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 5000,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_mel__room-s",
+    "locationId": "loc_hive_mel",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 6600,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_mel__room-l",
+    "locationId": "loc_hive_mel",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 16500,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_hive_mel__office",
+    "locationId": "loc_hive_mel",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 220000,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_bne__hotdesk",
+    "locationId": "loc_clustered_bne",
+    "type": "hot_desk",
+    "name": "Hot desk day pass",
+    "capacity": 1,
+    "amenities": [
+      "Any open desk",
+      "Coffee & tea"
+    ],
+    "rate": {
+      "unit": "day",
+      "price": {
+        "amountMinor": 4100,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_bne__room-s",
+    "locationId": "loc_clustered_bne",
+    "type": "meeting_room",
+    "name": "Meeting room (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "TV screen",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 5400,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_bne__room-l",
+    "locationId": "loc_clustered_bne",
+    "type": "meeting_room",
+    "name": "Boardroom (10 pax)",
+    "capacity": 10,
+    "amenities": [
+      "Video conferencing",
+      "Whiteboard"
+    ],
+    "rate": {
+      "unit": "hour",
+      "price": {
+        "amountMinor": 13500,
+        "currency": "AUD"
+      }
+    }
+  },
+  {
+    "id": "loc_clustered_bne__office",
+    "locationId": "loc_clustered_bne",
+    "type": "private_office",
+    "name": "Private office (4 pax)",
+    "capacity": 4,
+    "amenities": [
+      "Lockable door",
+      "Mail handling"
+    ],
+    "rate": {
+      "unit": "month",
+      "price": {
+        "amountMinor": 180000,
+        "currency": "AUD"
+      }
+    }
+  }
+]
