@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { Link, type Href } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 
 import type { Brand } from '@/api/schemas/brand';
 import type { Location } from '@/api/schemas/location';
@@ -8,14 +9,13 @@ import { BrandThemeScope } from '@/theme/brand-theme';
 type LocationCardProps = {
   readonly location: Location;
   readonly brand: Brand | undefined;
+  /** When set, the card opens this route. */
+  readonly href?: Href;
 };
 
-export function LocationCard({ location, brand }: LocationCardProps) {
-  return (
-    <BrandThemeScope
-      theme={brand?.theme}
-      className="gap-3 rounded-2xl border border-border bg-surface p-4"
-    >
+export function LocationCard({ location, brand, href }: LocationCardProps) {
+  const body = (
+    <>
       <View className="flex-row items-center justify-between gap-2">
         <Badge label={brand?.name ?? location.brandId} />
         <Text className="text-xs text-text-muted">{location.city}</Text>
@@ -27,6 +27,26 @@ export function LocationCard({ location, brand }: LocationCardProps) {
         </Text>
       </View>
       <Text className="text-xs text-text-muted">{location.amenities.join(' · ')}</Text>
+    </>
+  );
+
+  const card = 'gap-3 rounded-2xl border border-border bg-surface p-4';
+
+  return (
+    <BrandThemeScope theme={brand?.theme}>
+      {href ? (
+        <Link href={href} asChild>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={`${location.name}, ${brand?.name ?? ''}, ${location.city}`}
+            className={`${card} active:bg-surface-muted`}
+          >
+            {body}
+          </Pressable>
+        </Link>
+      ) : (
+        <View className={card}>{body}</View>
+      )}
     </BrandThemeScope>
   );
 }

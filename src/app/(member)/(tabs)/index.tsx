@@ -93,6 +93,7 @@ export default function ExploreScreen() {
               key={location.id}
               location={location}
               brand={brands.data.find((b) => b.id === location.brandId)}
+              href={{ pathname: '/locations/[id]', params: { id: location.id } }}
             />
           ))
         )}
