@@ -58,6 +58,9 @@ npm start            # Expo dev server
 npm run check        # typecheck, lint, format check, tests
 npm run build:web    # static web export to dist/ (deployed on Netlify)
 npm run openapi      # regenerate docs/openapi.json from the Zod schemas
+npm run seed:export  # re-export mock data as the Laravel seed fixtures
+
+cd backend && php artisan test   # Laravel API feature tests
 ```
 
 ## Docs

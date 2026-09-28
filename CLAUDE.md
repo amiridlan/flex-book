@@ -32,6 +32,7 @@ npm run check        # typecheck + lint + format check + tests — must pass bef
 npm run build:web    # web export to dist/ (what Netlify runs) — must pass before every push
 npm test             # jest
 npm run format       # prettier --write
+(cd backend && php artisan test && ./vendor/bin/pint --test)   # Laravel API: tests + PHP style
 ```
 
 ## React / React Native rules
