@@ -191,11 +191,12 @@ function SettingsEditor({ location }: { readonly location: LocationSettingsView 
 
         <View className="gap-2">
           <Text className="text-sm font-semibold text-text">Spaces</Text>
-          {spaces.map((sp) => (
-            <View key={sp.id} className="flex-row flex-wrap items-center justify-between gap-2">
-              <Text className="flex-1 text-sm text-text">{sp.name}</Text>
+          <Text className="text-sm text-text-muted">Tap a space to close or reopen it.</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {spaces.map((sp) => (
               <Chip
-                label={sp.closed ? `Closed: ${sp.name}` : `Open: ${sp.name}`}
+                key={sp.id}
+                label={`${sp.name}: ${sp.closed ? 'closed' : 'open'}`}
                 selected={!sp.closed}
                 onPress={() =>
                   setSpaces((all) =>
@@ -203,8 +204,8 @@ function SettingsEditor({ location }: { readonly location: LocationSettingsView 
                   )
                 }
               />
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
 
         <View className="gap-3">
