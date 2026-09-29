@@ -24,6 +24,7 @@ export const colorTokens = {
   'sidebar-active': '30 41 59',
   'sidebar-text': '226 232 240',
   'sidebar-muted': '148 163 184',
+  'sidebar-indicator': '15 118 110',
 } as const;
 
 export type ColorToken = keyof typeof colorTokens;

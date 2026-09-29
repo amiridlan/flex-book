@@ -36,6 +36,7 @@ module.exports = {
         active: token('sidebar-active'),
         text: token('sidebar-text'),
         muted: token('sidebar-muted'),
+        indicator: token('sidebar-indicator'),
       },
     },
     extend: {
