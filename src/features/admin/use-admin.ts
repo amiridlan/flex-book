@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { adminRepository } from '@/api';
-import type { UpdateAccessInput } from '@/api/schemas/admin';
+import type { InviteStaffInput, UpdateAccessInput, UpdateStatusInput } from '@/api/schemas/admin';
 import { queryKeys } from '@/lib/query-keys';
 
 export function useAdminUsers() {
@@ -27,6 +27,23 @@ export function useUpdateAccess() {
   return useMutation({
     mutationFn: ({ userId, input }: { userId: string; input: UpdateAccessInput }) =>
       adminRepository.updateAccess(userId, input),
+    onSuccess: onChanged,
+  });
+}
+
+export function useSetStatus() {
+  const onChanged = useAdminChanged();
+  return useMutation({
+    mutationFn: ({ userId, input }: { userId: string; input: UpdateStatusInput }) =>
+      adminRepository.setStatus(userId, input),
+    onSuccess: onChanged,
+  });
+}
+
+export function useInviteStaff() {
+  const onChanged = useAdminChanged();
+  return useMutation({
+    mutationFn: (input: InviteStaffInput) => adminRepository.invite(input),
     onSuccess: onChanged,
   });
 }

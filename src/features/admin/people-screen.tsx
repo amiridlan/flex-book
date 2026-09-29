@@ -17,6 +17,7 @@ import { useLocations } from '@/features/locations/use-locations';
 import { useLayout } from '@/lib/use-layout';
 
 import { AccessEditor } from './access-editor';
+import { InviteForm } from './invite-form';
 import { useAdminUsers } from './use-admin';
 
 type Filter = 'everyone' | 'staff' | 'members';
@@ -43,6 +44,7 @@ export function PeopleScreen() {
   const { wide } = useLayout();
   const [filter, setFilter] = useState<Filter>('everyone');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
 
   if (!hasPermission(me, 'users.manage')) {
     return (
@@ -80,7 +82,19 @@ export function PeopleScreen() {
   const selected = users.data.find((u) => u.id === selectedId) ?? null;
   const access = (u: AdminUser) => describeAccess(u.role, u.assignments, names);
 
-  const editor = selected ? (
+  function select(id: string | null) {
+    setSelectedId(id);
+    setInviting(false);
+  }
+
+  const editor = inviting ? (
+    <InviteForm
+      brands={brands.data}
+      locations={allLocations}
+      onInvited={(user) => select(user.id)}
+      onCancel={() => setInviting(false)}
+    />
+  ) : selected ? (
     <AccessEditor
       key={selected.id}
       user={selected}
@@ -115,6 +129,16 @@ export function PeopleScreen() {
       <PageHeader
         title="People and access"
         subtitle="Change what each person can see. Changes apply on their next action."
+        actions={
+          <Button
+            label="Invite staff"
+            variant="secondary"
+            onPress={() => {
+              setSelectedId(null);
+              setInviting(true);
+            }}
+          />
+        }
       />
       {wide ? (
         <TwoColumn
@@ -127,7 +151,7 @@ export function PeopleScreen() {
                     key={u.id}
                     accessibilityLabel={`${u.name}, ${ROLE_LABELS[u.role]}`}
                     highlight={u.id === selectedId}
-                    onPress={() => setSelectedId(u.id)}
+                    onPress={() => select(u.id)}
                   >
                     <Cell width="flex-1">
                       <Text className="text-sm font-medium text-text">{u.name}</Text>
@@ -149,20 +173,22 @@ export function PeopleScreen() {
           }
           aside={editor}
         />
-      ) : selected ? (
+      ) : selected || inviting ? (
         <View className="gap-4">
-          <Button label="Back to everyone" variant="ghost" onPress={() => setSelectedId(null)} />
+          <Button label="Back to everyone" variant="ghost" onPress={() => select(null)} />
           {editor}
         </View>
       ) : (
         <View className="gap-3">
+          {/* The page header shows no actions on phones, so the invite button sits here. */}
+          <Button label="Invite staff" variant="secondary" onPress={() => setInviting(true)} />
           {filters}
           {shown.map((u) => (
             <Pressable
               key={u.id}
               accessibilityRole="button"
               accessibilityLabel={`${u.name}, ${ROLE_LABELS[u.role]}`}
-              onPress={() => setSelectedId(u.id)}
+              onPress={() => select(u.id)}
               className="gap-1 rounded-2xl border border-border bg-surface p-4 active:bg-surface-muted"
             >
               <View className="flex-row items-center justify-between gap-2">

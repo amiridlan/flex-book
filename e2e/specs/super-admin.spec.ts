@@ -34,6 +34,32 @@ test.describe('super admin', () => {
     await expect(onScreen(page.getByLabel(/^Telok Commons/))).toBeVisible();
   });
 
+  test('invites a staff member, then suspends a member with a reason', async ({ page, wide }) => {
+    await signIn(page, 'superAdmin');
+    await openSection(page, wide, 'People');
+
+    await onScreen(page.getByRole('button', { name: 'Invite staff' })).click();
+    await onScreen(page.getByLabel('Full name')).fill('Aina Karim');
+    await onScreen(page.getByLabel('Work email')).fill('aina.karim@example.com');
+    await onScreen(page.getByRole('button', { name: 'All Hive locations' })).click();
+    await onScreen(page.getByRole('button', { name: 'Send invite' })).click();
+    // The new account opens in the editor.
+    await expect(onScreen(page.getByText('aina.karim@example.com'))).toBeVisible();
+
+    if (!wide) await onScreen(page.getByRole('button', { name: 'Back to everyone' })).click();
+    await onScreen(page.getByLabel('Olivia Brown, Member', { exact: true })).click();
+    await onScreen(page.getByRole('button', { name: 'Suspend account' })).click();
+    await onScreen(page.getByLabel('Why suspend?')).fill('Card payment disputed');
+    await onScreen(page.getByRole('button', { name: 'Confirm suspension' })).click();
+    await expect(onScreen(page.getByText(/^Suspended: they are signed out/))).toBeVisible();
+
+    if (!wide) await onScreen(page.getByRole('button', { name: 'Back to everyone' })).click();
+    await openSection(page, wide, 'Activity');
+    await expect(onScreen(page.getByText('Suspended account · Olivia Brown'))).toBeVisible();
+    await expect(onScreen(page.getByText('Card payment disputed'))).toBeVisible();
+    await expect(onScreen(page.getByText('Invited staff · Aina Karim'))).toBeVisible();
+  });
+
   test('other roles never see the admin screens', async ({ page, wide }) => {
     await signIn(page, 'hiveStaff');
     await expect(onScreen(page.getByText(/^Today · Bangsar Loft/))).toBeVisible();

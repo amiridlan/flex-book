@@ -5,85 +5,43 @@ import { firstError } from '@/api/client/api-error';
 import type { AdminUser } from '@/api/schemas/admin';
 import type { Brand } from '@/api/schemas/brand';
 import type { Location } from '@/api/schemas/location';
-import type { Assignment, Role } from '@/api/schemas/user';
+import type { Role } from '@/api/schemas/user';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Chip } from '@/components/ui/chip';
-import { ROLE_LABELS } from '@/features/auth/permissions';
-import {
-  accessProblem,
-  describeAccess,
-  needsAssignments,
-  normaliseAssignments,
-} from '@/domain/access';
+import { TextField } from '@/components/ui/text-field';
+import { normaliseAssignments } from '@/domain/access';
 
-import { useUpdateAccess } from './use-admin';
+import { AccessFields, useAccessDraft } from './access-fields';
+import { useSetStatus, useUpdateAccess } from './use-admin';
 
 const ROLES: readonly Role[] = ['member', 'staff', 'brand_admin', 'group_admin', 'super_admin'];
 
-const ROLE_HINTS: Readonly<Record<Role, string>> = {
-  member: 'Books spaces at every brand.',
-  staff: 'Runs the front desk at the brands or locations chosen below.',
-  brand_admin: 'Manages whole brands chosen below.',
-  group_admin: 'Sees every brand and location.',
-  super_admin: 'Manages people, access and settings.',
-};
-
 type AccessEditorProps = {
   readonly user: AdminUser;
-  /** The signed-in super admin: nobody may change their own access. */
+  /** The signed-in super admin: nobody may change their own access or suspend themselves. */
   readonly isSelf: boolean;
   readonly brands: readonly Brand[];
   readonly locations: readonly Location[];
 };
 
 /**
- * Edits one person's role and brand/location access. The rules here mirror the
- * server's (shared from src/domain/access), so mistakes show before saving; the
- * server still checks them.
+ * Edits one person's role and brand/location access, and suspends or reactivates
+ * the account. The rules mirror the server's (src/domain/access), so mistakes
+ * show before saving; the server still checks them.
  */
 export function AccessEditor({ user, isSelf, brands, locations }: AccessEditorProps) {
   const update = useUpdateAccess();
-  const [role, setRole] = useState<Role>(user.role);
-  const [picked, setPicked] = useState<readonly Assignment[]>(user.assignments);
+  const access = useAccessDraft(user.role, user.assignments);
   const [saved, setSaved] = useState(false);
 
-  const names = {
-    brand: (id: string) => brands.find((b) => b.id === id)?.name ?? id,
-    location: (id: string) => locations.find((l) => l.id === id)?.name ?? id,
-  };
-  const draft = needsAssignments(role) ? normaliseAssignments(picked) : [];
-  const current = normaliseAssignments(user.assignments);
-  const changed = role !== user.role || JSON.stringify(draft) !== JSON.stringify(current);
-  const problem = accessProblem(role, draft);
+  const changed =
+    access.role !== user.role ||
+    JSON.stringify(access.draft) !== JSON.stringify(normaliseAssignments(user.assignments));
   const serverError = firstError(update.error);
-
-  function edit(next: readonly Assignment[]) {
-    setPicked(next);
-    setSaved(false);
-  }
-
-  function toggleBrand(brandId: Brand['id']) {
-    const whole = picked.some((a) => a.brandId === brandId && a.locationId === null);
-    edit(
-      whole
-        ? picked.filter((a) => a.brandId !== brandId)
-        : [...picked.filter((a) => a.brandId !== brandId), { brandId, locationId: null }],
-    );
-  }
-
-  function toggleLocation(location: Location) {
-    const has = picked.some((a) => a.locationId === location.id);
-    edit(
-      has
-        ? picked.filter((a) => a.locationId !== location.id)
-        : [...picked, { brandId: location.brandId, locationId: location.id }],
-    );
-  }
 
   function save() {
     update.mutate(
-      { userId: user.id, input: { role, assignments: draft } },
+      { userId: user.id, input: { role: access.role, assignments: access.draft } },
       { onSuccess: () => setSaved(true) },
     );
   }
@@ -98,75 +56,18 @@ export function AccessEditor({ user, isSelf, brands, locations }: AccessEditorPr
       {isSelf ? (
         <View className="rounded-xl bg-surface-muted p-3">
           <Text className="text-sm text-text-muted">
-            You can’t change your own access. Another super admin has to do it.
+            You can’t change your own access or suspend yourself. Another super admin has to do it.
           </Text>
         </View>
       ) : (
         <View className="gap-5 pt-2">
-          <View className="gap-2">
-            <Text className="text-sm font-semibold text-text">Role</Text>
-            <View className="flex-row flex-wrap gap-2">
-              {ROLES.map((r) => (
-                <Chip
-                  key={r}
-                  label={ROLE_LABELS[r]}
-                  selected={role === r}
-                  onPress={() => {
-                    setRole(r);
-                    setSaved(false);
-                  }}
-                />
-              ))}
-            </View>
-            <Text className="text-sm text-text-muted">{ROLE_HINTS[role]}</Text>
-          </View>
-
-          {needsAssignments(role) ? (
-            <View className="gap-4">
-              <Text className="text-sm font-semibold text-text">Access</Text>
-              {brands.map((brand) => {
-                const whole = picked.some((a) => a.brandId === brand.id && a.locationId === null);
-                const brandLocations = locations.filter((l) => l.brandId === brand.id);
-                return (
-                  <View key={brand.id} className="gap-2">
-                    <Text className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-                      {brand.name}
-                    </Text>
-                    <View className="flex-row flex-wrap gap-2">
-                      <Chip
-                        label={`All ${brand.name} locations`}
-                        selected={whole}
-                        onPress={() => toggleBrand(brand.id)}
-                      />
-                      {role === 'staff' && !whole
-                        ? brandLocations.map((location) => (
-                            <Chip
-                              key={location.id}
-                              label={`${location.name} · ${location.city}`}
-                              selected={picked.some((a) => a.locationId === location.id)}
-                              onPress={() => toggleLocation(location)}
-                            />
-                          ))
-                        : null}
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          ) : null}
-
-          <View className="gap-1 rounded-xl bg-surface-muted p-3">
-            <Text className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-              After saving
-            </Text>
-            <Text className="text-sm text-text">{describeAccess(role, draft, names)}</Text>
-          </View>
-
-          {problem ? (
-            <Text accessibilityRole="alert" className="text-sm text-danger">
-              {problem}
-            </Text>
-          ) : null}
+          <AccessFields
+            access={access}
+            roles={ROLES}
+            brands={brands}
+            locations={locations}
+            onEdit={() => setSaved(false)}
+          />
           {serverError ? (
             <View accessibilityRole="alert" className="rounded-xl bg-danger-soft p-3">
               <Text className="text-sm text-danger">{serverError}</Text>
@@ -178,15 +79,73 @@ export function AccessEditor({ user, isSelf, brands, locations }: AccessEditorPr
               log.
             </Text>
           ) : null}
-
           <Button
             label="Save access"
             onPress={save}
             loading={update.isPending}
-            disabled={!changed || problem !== null}
+            disabled={!changed || access.problem !== null}
           />
+          <AccountStatus user={user} />
         </View>
       )}
     </Card>
+  );
+}
+
+/** Suspend (signs them out, blocks sign-in) or reactivate, with a reason for the log. */
+function AccountStatus({ user }: { readonly user: AdminUser }) {
+  const setStatus = useSetStatus();
+  const [confirming, setConfirming] = useState(false);
+  const [reason, setReason] = useState('');
+  const suspended = user.status === 'suspended';
+  const error = firstError(setStatus.error);
+
+  function submit() {
+    setStatus.mutate(
+      {
+        userId: user.id,
+        input: { status: suspended ? 'active' : 'suspended', reason },
+      },
+      {
+        onSuccess: () => {
+          setConfirming(false);
+          setReason('');
+        },
+      },
+    );
+  }
+
+  return (
+    <View className="gap-3 border-t border-border pt-4">
+      <Text className="text-sm font-semibold text-text">Account</Text>
+      <Text className="text-sm text-text-muted">
+        {suspended
+          ? 'Suspended: they are signed out and cannot sign in.'
+          : 'Active: they can sign in and use the app.'}
+      </Text>
+      {confirming ? (
+        <View className="gap-3">
+          <TextField
+            label={suspended ? 'Why reactivate?' : 'Why suspend?'}
+            value={reason}
+            onChangeText={setReason}
+            error={error ?? undefined}
+            hint="Saved in the activity log."
+          />
+          <Button
+            label={suspended ? 'Confirm reactivation' : 'Confirm suspension'}
+            onPress={submit}
+            loading={setStatus.isPending}
+          />
+          <Button label="Keep as it is" variant="ghost" onPress={() => setConfirming(false)} />
+        </View>
+      ) : (
+        <Button
+          label={suspended ? 'Reactivate account' : 'Suspend account'}
+          variant="secondary"
+          onPress={() => setConfirming(true)}
+        />
+      )}
+    </View>
   );
 }
