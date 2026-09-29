@@ -69,7 +69,8 @@ const DEMO_DAY: readonly {
   { offsetMin: -150, spaceKey: 'room-l', status: 'checked_in' },
   { offsetMin: -45, spaceKey: 'room-s', status: 'confirmed' },
   { offsetMin: 10, spaceKey: 'room-l', status: 'confirmed' },
-  { offsetMin: 120, spaceKey: 'room-s', status: 'confirmed' },
+  // In the boardroom, so the meeting room stays free for a member to book live.
+  { offsetMin: 120, spaceKey: 'room-l', status: 'confirmed' },
 ];
 
 const FIVE_MIN = 5 * 60_000;
@@ -193,6 +194,25 @@ export function createBookingStore(random: () => number, now: () => number) {
       'checked_in',
     );
     bookings.set(past.id, past);
+
+    // An upcoming booking, so My bookings opens on a confirmed booking with its QR
+    // code: 10:00–11:00 in Menara Aurora's boardroom on its next open day.
+    const boardroom = SPACES.find((s) => s.id === 'loc_tcg_kul__room-l');
+    if (!boardroom) return;
+    for (let days = 1; days <= 7; days++) {
+      const day = formatInZone(now() + days * 86_400_000, location.timezone, 'yyyy-MM-dd');
+      if (!location.openingHours[weekdayIndex(day)]) continue;
+      const upcoming = build(
+        { userId: member.id, customer: { name: member.name, email: member.email } },
+        location,
+        boardroom,
+        zonedInstant(day, '10:00', location.timezone),
+        zonedInstant(day, '11:00', location.timezone),
+        'confirmed',
+      );
+      bookings.set(upcoming.id, upcoming);
+      return;
+    }
   }
 
   function seedToday() {

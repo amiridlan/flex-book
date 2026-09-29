@@ -1,6 +1,6 @@
 import type { Availability, Slot } from '../schemas/availability';
 import type { Location, Space } from '../schemas/location';
-import { weekdayIndex, zonedInstant } from '@/lib/time';
+import { todayIn, weekdayIndex, zonedInstant } from '@/lib/time';
 
 /** Small deterministic hash so "busy" slots look random but stay stable between reloads. */
 function hash(text: string): number {
@@ -51,10 +51,13 @@ export function buildAvailability(
     return { ...base, bookable: true, open: true, slots: [slot] };
   }
 
+  const isToday = date === todayIn(location.timezone, now);
   const slots: Slot[] = [];
   for (let start = Date.parse(opens); start + 3_600_000 <= Date.parse(closes); start += 3_600_000) {
     const startsAt = new Date(start).toISOString();
-    const busy = hash(`${space.id}:${startsAt}`) % 4 === 0;
+    // Random "busy" slots make later days look lived-in. Today only real bookings
+    // block a slot, so a live demo always finds free rooms for the rest of the day.
+    const busy = !isToday && hash(`${space.id}:${startsAt}`) % 4 === 0;
     slots.push({
       startsAt,
       endsAt: new Date(start + 3_600_000).toISOString(),
