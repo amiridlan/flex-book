@@ -1,3 +1,5 @@
+import type { Locator } from '@playwright/test';
+
 import { expect, onScreen, openSection, signIn, test } from '../fixtures';
 
 test.describe('laptop layout', () => {
@@ -74,5 +76,46 @@ test.describe('documentation page', () => {
       await page.getByLabel('Back').click();
     }
     await expect(page.getByLabel('Sign in as Member')).toBeVisible();
+  });
+});
+
+test.describe('brand-coloured navigation', () => {
+  /** Background of the element, or of the nearest ancestor that paints one. */
+  async function paintedBackground(locator: Locator) {
+    return locator.evaluate((el) => {
+      for (let node: Element | null = el; node; node = node.parentElement) {
+        const colour = getComputedStyle(node).backgroundColor;
+        if (colour !== 'rgba(0, 0, 0, 0)' && colour !== 'transparent') return colour;
+      }
+      return 'none';
+    });
+  }
+
+  const NEUTRAL = 'rgb(15, 23, 42)';
+  const HIVE = 'rgb(81, 46, 4)';
+
+  test('a member’s sidebar takes the brand of the location being viewed', async ({
+    page,
+    wide,
+  }) => {
+    test.skip(!wide, 'desktop only');
+    await signIn(page, 'member');
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    await expect.poll(() => paintedBackground(nav)).toBe(NEUTRAL);
+
+    await onScreen(page.getByLabel(/^Bangsar Loft/)).click();
+    await expect.poll(() => paintedBackground(nav)).toBe(HIVE);
+    await expect(nav.getByText('Hive', { exact: true })).toBeVisible();
+
+    await nav.getByRole('link', { name: 'Explore', exact: true }).click();
+    await expect.poll(() => paintedBackground(nav)).toBe(NEUTRAL);
+  });
+
+  test('staff navigation wears their brand', async ({ page, wide }) => {
+    await signIn(page, 'hiveStaff');
+    const nav = wide
+      ? page.getByRole('navigation', { name: 'Main' })
+      : onScreen(page.getByRole('tab', { name: /Today/ }));
+    await expect.poll(() => paintedBackground(nav)).toBe(HIVE);
   });
 });
