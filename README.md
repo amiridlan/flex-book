@@ -48,7 +48,7 @@ Profile → **Demo location** lets the presenter "be" in Sydney, on site, or on 
 
 ## Stack
 
-Expo SDK 57 · React Native 0.86 · TypeScript (strict) · Expo Router · NativeWind · TanStack Query · Zustand · Zod · React Hook Form · date-fns + @date-fns/tz · expo-location · expo-camera · Jest + React Native Testing Library · ESLint + Prettier · EAS Update · Netlify (web)
+Expo SDK 57 · React Native 0.86 · TypeScript (strict) · Expo Router · NativeWind · TanStack Query · Zustand · Zod · React Hook Form · date-fns + @date-fns/tz · expo-location · expo-camera · Jest + React Native Testing Library · Playwright · ESLint + Prettier · EAS Update · Netlify (web)
 
 ## Scripts
 
@@ -57,6 +57,7 @@ npm ci               # install from the lockfile
 npm start            # Expo dev server
 npm run check        # typecheck, lint, format check, tests
 npm run build:web    # static web export to dist/ (deployed on Netlify)
+npm run e2e          # end-to-end tests in a real browser (Playwright), desktop and phone sizes
 npm run openapi      # regenerate docs/openapi.json from the Zod schemas
 npm run seed:export  # re-export mock data as the Laravel seed fixtures
 

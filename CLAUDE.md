@@ -23,7 +23,7 @@ It is **frontend-only**, backed by a **mock API adapter** with fictional data. A
 
 Expo SDK 57, React Native 0.86, React 19.2, TypeScript 6 (strict), Expo Router (typed routes), NativeWind 4 + Tailwind CSS 3.4, Jest (`jest-expo`) + React Native Testing Library 14, ESLint 9 (`eslint-config-expo`) + Prettier. npm.
 
-Installed: TanStack Query, Zustand, Zod, @expo/vector-icons (Ionicons), date-fns v4 + @date-fns/tz, expo-location, qrcode (pure-JS QR encoder, rendered with Views), expo-updates (EAS Update), expo-camera (QR scanning, also on web), React Hook Form + @hookform/resolvers. Planned (add in the phase that needs them, via `EXPO_OFFLINE=1 npx expo install`): i18next, expo-secure-store, react-native-maps. **Ask before adding anything not on this list.**
+Installed: TanStack Query, Zustand, Zod, @expo/vector-icons (Ionicons), date-fns v4 + @date-fns/tz, expo-location, qrcode (pure-JS QR encoder, rendered with Views), expo-updates (EAS Update), expo-camera (QR scanning, also on web), React Hook Form + @hookform/resolvers, @playwright/test (dev: end-to-end tests in `e2e/`). Planned (add in the phase that needs them, via `EXPO_OFFLINE=1 npx expo install`): i18next, expo-secure-store, react-native-maps. **Ask before adding anything not on this list.**
 
 ## Commands
 
@@ -31,9 +31,12 @@ Installed: TanStack Query, Zustand, Zod, @expo/vector-icons (Ionicons), date-fns
 npm run check        # typecheck + lint + format check + tests — must pass before every push
 npm run build:web    # web export to dist/ (what Netlify runs) — must pass before every push
 npm test             # jest
+npm run e2e          # builds the web export, then Playwright end-to-end tests (desktop + phone)
 npm run format       # prettier --write
 (cd backend && php artisan test && ./vendor/bin/pint --test)   # Laravel API: tests + PHP style
 ```
+
+End-to-end tests: specs live in `e2e/specs`, shared helpers in `e2e/fixtures.ts`. Every test starts the browser clock at Tue 06/10/2026 9:50 am (Kuala Lumpur) so seeded data is predictable; do not use `page.clock` (its fake Date breaks @date-fns/tz). In a cloud session, reuse the preinstalled browser: `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run e2e`.
 
 ## React / React Native rules
 
