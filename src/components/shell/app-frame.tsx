@@ -11,6 +11,7 @@ import { useBrands } from '@/features/catalog/use-catalog';
 import { useLayout } from '@/lib/use-layout';
 import { navColor, navPalette, navVars } from '@/theme/nav-palette';
 
+import { BrandLabel, useBackgroundWipe } from './brand-transition';
 import type { NavItem } from './nav-items';
 
 type AppFrameProps = {
@@ -41,6 +42,8 @@ function Sidebar({ nav, brand }: { readonly nav: readonly NavItem[]; readonly br
   const signOut = useSignOut();
   const brands = useBrands();
   const palette = navPalette(brand?.theme);
+  // Brand colours are API data, so the animated background is an inline colour, not a class.
+  const { paintedBackground, overlay } = useBackgroundWipe(palette.background);
 
   return (
     // The wrapper re-points the sidebar-* tokens, so every class below takes the brand's colours.
@@ -48,8 +51,10 @@ function Sidebar({ nav, brand }: { readonly nav: readonly NavItem[]; readonly br
       <View
         role="navigation"
         accessibilityLabel="Main"
-        className="w-60 justify-between bg-sidebar px-3 pb-5 pt-6"
+        style={{ backgroundColor: paintedBackground }}
+        className="w-60 justify-between px-3 pb-5 pt-6"
       >
+        {overlay}
         <View className="gap-8">
           <View className="flex-row items-center gap-3 px-3">
             <View
@@ -68,7 +73,10 @@ function Sidebar({ nav, brand }: { readonly nav: readonly NavItem[]; readonly br
             </View>
             <View>
               <Text className="text-lg font-bold text-sidebar-text">FlexiSpace</Text>
-              {brand ? <Text className="text-xs text-sidebar-muted">{brand.name}</Text> : null}
+              <BrandLabel
+                name={brand?.name ?? 'All brands'}
+                className="text-xs text-sidebar-muted"
+              />
             </View>
           </View>
 
