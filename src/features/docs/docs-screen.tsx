@@ -64,7 +64,8 @@ export function DocsScreen() {
   // y of each section inside the scroll content, filled by onLayout.
   const offsets = useRef<Partial<Record<DocSectionId, number>>>({});
   const columnTop = useRef(0);
-  const [active, setActive] = useState<DocSectionId>('overview');
+  // Null while the reader is still in the opening section, which the list leaves out.
+  const [active, setActive] = useState<DocSectionId | null>(null);
   const host = webHost();
 
   function leave() {
@@ -81,7 +82,7 @@ export function DocsScreen() {
 
   function onScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const y = event.nativeEvent.contentOffset.y + SCROLL_MARGIN * 2;
-    let current: DocSectionId = 'overview';
+    let current: DocSectionId | null = null;
     for (const { id } of DOC_SECTIONS) {
       const top = offsets.current[id];
       if (top !== undefined && columnTop.current + top <= y) current = id;

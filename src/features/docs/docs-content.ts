@@ -8,8 +8,11 @@ export type DocSectionId =
 
 export type DocSection = { readonly id: DocSectionId; readonly title: string };
 
+/**
+ * The "On this page" list. The opening section ('overview') is left out: it sits at
+ * the top of the page, so the list starts with what comes after it.
+ */
 export const DOC_SECTIONS: readonly DocSection[] = [
-  { id: 'overview', title: 'Overview' },
   { id: 'try-it', title: 'Try the demo' },
   { id: 'stack', title: 'Tech stack' },
   { id: 'architecture', title: 'How it fits together' },
