@@ -9,10 +9,11 @@ export function useMyBookings() {
   return useQuery({ queryKey: queryKeys.bookings.mine, queryFn: () => bookingRepository.mine() });
 }
 
-export function useBooking(id: string) {
+export function useBooking(id: string, options: { readonly enabled?: boolean } = {}) {
   return useQuery({
     queryKey: queryKeys.bookings.detail(id),
     queryFn: () => bookingRepository.get(id),
+    enabled: options.enabled ?? true,
   });
 }
 

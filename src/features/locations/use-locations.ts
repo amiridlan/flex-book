@@ -11,10 +11,11 @@ export function useLocations(filters: LocationFilters = {}) {
   });
 }
 
-export function useLocation(id: string) {
+export function useLocation(id: string, options: { readonly enabled?: boolean } = {}) {
   return useQuery({
     queryKey: queryKeys.locations.detail(id),
     queryFn: () => locationRepository.get(id),
+    enabled: options.enabled ?? true,
   });
 }
 
