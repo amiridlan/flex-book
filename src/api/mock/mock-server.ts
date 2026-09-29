@@ -59,7 +59,10 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
   const sessions = new Map<string, string>(); // token -> user id
   const router = createRouter();
   const bookings = createBookingStore(random, now);
-  bookings.seed(USERS.find((u) => u.role === 'member'));
+  bookings.seed(
+    USERS.find((u) => u.role === 'member'),
+    USERS,
+  );
   const admin = createAdminStore(now);
 
   /** Read fresh on every request, so an access change applies to the user's next call. */
@@ -319,6 +322,36 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       const body = inviteStaffSchema.safeParse(request.body);
       if (!body.success) return validationError(fieldErrors(body.error.issues));
       return admin.invite(user, body.data);
+    }),
+  );
+
+  router.on(
+    'GET',
+    '/admin/flags',
+    adminOnly('audit.view', () => {
+      const flagged = [...bookings.flagSummary().entries()]
+        .map(([userId, f]) => {
+          const account = admin.account(userId);
+          return account
+            ? {
+                user: {
+                  id: account.id,
+                  name: account.name,
+                  email: account.email,
+                  status: account.status,
+                },
+                blockedAttempts: f.blockedAttempts,
+                noShows: f.noShows,
+                lastEvent: f.lastAt
+                  ? { at: new Date(f.lastAt).toISOString(), description: f.lastDescription }
+                  : null,
+              }
+            : null;
+        })
+        .filter((f) => f !== null)
+        // Fake-GPS style attempts weigh more than a missed booking.
+        .sort((a, b) => b.blockedAttempts * 2 + b.noShows - (a.blockedAttempts * 2 + a.noShows));
+      return json(200, { data: flagged });
     }),
   );
 

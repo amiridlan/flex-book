@@ -1,6 +1,7 @@
 import { createApiClient } from '../../client/api-client';
 import { createAdminRepository } from '../../repositories/admin-repository';
 import { createAuthRepository } from '../../repositories/auth-repository';
+import { createBookingRepository } from '../../repositories/booking-repository';
 import { createLocationRepository } from '../../repositories/location-repository';
 import { DEMO_PASSWORD } from '../db/users';
 import { createMockServer } from '../mock-server';
@@ -17,6 +18,7 @@ async function setup() {
   const auth = createAuthRepository(api);
   return {
     admin: createAdminRepository(api),
+    bookings: createBookingRepository(api),
     locations: createLocationRepository(api),
     async as(email: string) {
       current = email;
@@ -192,5 +194,31 @@ describe('super admin API', () => {
         assignments: [{ brandId: 'hive', locationId: null }],
       }),
     ).rejects.toMatchObject({ fieldErrors: { email: [expect.stringContaining('already')] } });
+  });
+
+  it('flags members with blocked attempts and no-shows, worst first', async () => {
+    const { as, admin, bookings } = await setup();
+    // A member tries to book Bangsar Loft from a fake-GPS app.
+    await as('olivia@example.com');
+    await expect(
+      bookings.create({
+        spaceId: 'loc_hive_kul__room-s',
+        startsAt: '2030-01-07T02:00:00.000Z',
+        endsAt: '2030-01-07T03:00:00.000Z',
+        device: { lat: 3.13, lng: 101.67, mocked: true },
+      }),
+    ).rejects.toMatchObject({ kind: 'validation' });
+
+    await as(SUPER);
+    const flagged = await admin.flagged();
+    expect(flagged[0]).toMatchObject({
+      user: { name: 'Ryan Ong', status: 'suspended' },
+      blockedAttempts: 3,
+    });
+    expect(flagged.find((f) => f.user.name === 'Marcus Lee')).toMatchObject({ noShows: 2 });
+    expect(flagged.find((f) => f.user.name === 'Olivia Brown')).toMatchObject({
+      blockedAttempts: 1,
+      lastEvent: { description: 'Fake GPS · Bangsar Loft' },
+    });
   });
 });

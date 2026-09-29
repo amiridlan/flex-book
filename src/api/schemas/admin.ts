@@ -70,3 +70,19 @@ export const auditEventSchema = z.object({
   reason: z.string().nullable(),
 });
 export type AuditEvent = z.infer<typeof auditEventSchema>;
+
+/** A member whose behaviour needs a look: blocked booking attempts and no-shows. */
+export const flaggedMemberSchema = z.object({
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.email(),
+    status: accountStatusSchema,
+  }),
+  /** Bookings the server refused for the location rule (fake GPS, too far, wrong country). */
+  blockedAttempts: z.number().int().min(0),
+  noShows: z.number().int().min(0),
+  /** The most recent flagged event, in words. */
+  lastEvent: z.object({ at: isoDateTimeSchema, description: z.string() }).nullable(),
+});
+export type FlaggedMember = z.infer<typeof flaggedMemberSchema>;

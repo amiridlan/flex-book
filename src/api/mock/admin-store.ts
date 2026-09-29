@@ -95,6 +95,11 @@ export function createAdminStore(now: () => number) {
 
     findByEmail,
 
+    /** The full account record (with status), for admin views. */
+    account(id: string): AdminUser | null {
+      return users.get(id) ?? null;
+    },
+
     statusOf(id: string): AccountStatus | null {
       return users.get(id)?.status ?? null;
     },

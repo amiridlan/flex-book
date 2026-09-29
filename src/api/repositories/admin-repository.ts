@@ -4,8 +4,10 @@ import type { ApiClient } from '../client/api-client';
 import {
   adminUserSchema,
   auditEventSchema,
+  flaggedMemberSchema,
   type AdminUser,
   type AuditEvent,
+  type FlaggedMember,
   type InviteStaffInput,
   type UpdateAccessInput,
   type UpdateStatusInput,
@@ -18,6 +20,7 @@ export type AdminRepository = {
   setStatus(userId: string, input: UpdateStatusInput): Promise<AdminUser>;
   invite(input: InviteStaffInput): Promise<AdminUser>;
   auditTrail(): Promise<readonly AuditEvent[]>;
+  flagged(): Promise<readonly FlaggedMember[]>;
 };
 
 /** Super admin endpoints. The server checks the permission on every call. */
@@ -51,6 +54,11 @@ export function createAdminRepository(api: ApiClient): AdminRepository {
     async invite(input) {
       return (
         await api.request('POST', '/admin/users', resourceSchema(adminUserSchema), { body: input })
+      ).data;
+    },
+    async flagged() {
+      return (
+        await api.request('GET', '/admin/flags', z.object({ data: z.array(flaggedMemberSchema) }))
       ).data;
     },
     async auditTrail() {

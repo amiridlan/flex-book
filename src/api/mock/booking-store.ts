@@ -75,8 +75,22 @@ const DEMO_DAY: readonly {
 
 const FIVE_MIN = 5 * 60_000;
 
+/** A booking the server refused for the location rule: evidence of possible abuse. */
+type BlockedAttempt = {
+  readonly userId: string;
+  readonly at: number;
+  readonly description: string;
+};
+
+const ABUSE_WORDS: Readonly<Record<string, string>> = {
+  mocked_location: 'Fake GPS',
+  too_far: 'Too far away',
+  wrong_country: 'From another country',
+};
+
 export function createBookingStore(random: () => number, now: () => number) {
   const bookings = new Map<string, StoredBooking>();
+  const blocked: BlockedAttempt[] = [];
   let sequence = 0;
 
   function randomCode(length: number): string {
@@ -245,11 +259,92 @@ export function createBookingStore(random: () => number, now: () => number) {
     }
   }
 
+  /**
+   * Flagged members for the super admin's demo: repeated fake-GPS attempts (the
+   * member the admin already suspended), two no-shows, and one far-away attempt.
+   */
+  function seedFlags(users: readonly User[]) {
+    const byId = (id: string) => users.find((u) => u.id === id);
+    const ryan = byId('usr_member_suspended');
+    if (ryan) {
+      for (const daysAgo of [5, 4, 3]) {
+        blocked.push({
+          userId: ryan.id,
+          at: now() - daysAgo * 86_400_000,
+          description: 'Fake GPS · Bangsar Loft',
+        });
+      }
+    }
+    const linh = byId('usr_member_vn');
+    if (linh) {
+      blocked.push({
+        userId: linh.id,
+        at: now() - 86_400_000,
+        description: 'Too far away · Hoan Kiem Atelier',
+      });
+    }
+    const marcus = byId('usr_member_sg');
+    const location = LOCATIONS.find((l) => l.id === 'loc_hive_sin');
+    const space = SPACES.find((sp) => sp.id === 'loc_hive_sin__room-s');
+    if (marcus && location && space) {
+      for (const daysAgo of [6, 2]) {
+        const day = formatInZone(now() - daysAgo * 86_400_000, location.timezone, 'yyyy-MM-dd');
+        // Never checked in, so they read as no-shows.
+        const missed = build(
+          { userId: marcus.id, customer: { name: marcus.name, email: marcus.email } },
+          location,
+          space,
+          zonedInstant(day, '09:00', location.timezone),
+          zonedInstant(day, '10:00', location.timezone),
+          'confirmed',
+        );
+        bookings.set(missed.id, missed);
+      }
+    }
+  }
+
   return {
     /** Seeds demo data: the member's past visit and a realistic day at every location. */
-    seed(member: User | undefined) {
+    seed(member: User | undefined, everyone: readonly User[] = []) {
       if (member) seedMemberHistory(member);
       seedToday();
+      seedFlags(everyone);
+    },
+
+    /** Per member: blocked attempts, no-shows and the latest of either. */
+    flagSummary() {
+      const summary = new Map<
+        string,
+        { blockedAttempts: number; noShows: number; lastAt: number; lastDescription: string }
+      >();
+      const note = (
+        userId: string,
+        at: number,
+        description: string,
+        kind: 'blocked' | 'noShow',
+      ) => {
+        const entry = summary.get(userId) ?? {
+          blockedAttempts: 0,
+          noShows: 0,
+          lastAt: 0,
+          lastDescription: '',
+        };
+        if (kind === 'blocked') entry.blockedAttempts += 1;
+        else entry.noShows += 1;
+        if (at > entry.lastAt) {
+          entry.lastAt = at;
+          entry.lastDescription = description;
+        }
+        summary.set(userId, entry);
+      };
+      for (const attempt of blocked)
+        note(attempt.userId, attempt.at, attempt.description, 'blocked');
+      for (const b of bookings.values()) {
+        if (b.userId && effectiveStatus(b) === 'no_show') {
+          note(b.userId, Date.parse(b.startsAt), `No-show · ${b.location.name}`, 'noShow');
+        }
+      }
+      return summary;
     },
 
     ranges: bookedRanges,
@@ -263,6 +358,11 @@ export function createBookingStore(random: () => number, now: () => number) {
       const date = formatInZone(input.startsAt, location.timezone, 'yyyy-MM-dd');
       const rule = checkBookingRule(location, date, input.device, now());
       if (!rule.ok) {
+        const words = ABUSE_WORDS[rule.reason];
+        // Not sharing a location is not abuse; the other refusals are worth a look.
+        if (words) {
+          blocked.push({ userId: user.id, at: now(), description: `${words} · ${location.name}` });
+        }
         const countryName = COUNTRIES.find((c) => c.code === location.countryCode)?.name ?? '';
         return validationError({ location: [ruleMessage(rule, countryName)] });
       }

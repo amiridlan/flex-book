@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   adminUserSchema,
   auditEventSchema,
+  flaggedMemberSchema,
   inviteStaffSchema,
   updateAccessSchema,
   updateStatusSchema,
@@ -41,6 +42,7 @@ const COMPONENTS = {
   UpdateAccessRequest: updateAccessSchema,
   UpdateStatusRequest: updateStatusSchema,
   InviteStaffRequest: inviteStaffSchema,
+  FlaggedMember: flaggedMemberSchema,
   CreateBookingRequest: createBookingSchema,
   CheckInRequest: checkInSchema,
   StaffCheckInRequest: staffCheckInSchema,
@@ -276,6 +278,15 @@ const ENDPOINTS: readonly Endpoint[] = [
     data: 'AdminUser',
     status: 201,
     errors: [401, 403, 422],
+  },
+  {
+    method: 'get',
+    path: '/admin/flags',
+    operationId: 'listFlaggedMembers',
+    summary: 'Members with blocked booking attempts or no-shows, worst first (super admin)',
+    tag: 'Admin',
+    data: ['FlaggedMember'],
+    errors: [401, 403],
   },
   {
     method: 'get',

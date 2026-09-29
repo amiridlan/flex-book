@@ -1,7 +1,8 @@
+import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 
-import type { AuditAction, AuditEvent } from '@/api/schemas/admin';
+import type { AuditAction, AuditEvent, FlaggedMember } from '@/api/schemas/admin';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Chip } from '@/components/ui/chip';
@@ -12,7 +13,7 @@ import { hasPermission } from '@/features/auth/permissions';
 import { useSessionStore } from '@/features/auth/session-store';
 import { deviceTimeZone, formatInZone, TIME_FORMAT } from '@/lib/time';
 
-import { useAuditTrail } from './use-admin';
+import { useAuditTrail, useFlaggedMembers } from './use-admin';
 
 type Group = 'all' | 'access' | 'accounts' | 'bookings' | 'locations';
 
@@ -47,6 +48,7 @@ const MONO = Platform.select({ ios: 'Menlo', default: 'monospace' });
 export function ActivityScreen() {
   const me = useSessionStore((s) => s.user);
   const trail = useAuditTrail();
+  const flagged = useFlaggedMembers();
   const [group, setGroup] = useState<Group>('all');
   const [raw, setRaw] = useState(false);
 
@@ -81,6 +83,11 @@ export function ActivityScreen() {
           />
         }
       />
+      <Flagged query={flagged} />
+
+      <Text accessibilityRole="header" className="text-lg font-semibold text-text">
+        Audit trail
+      </Text>
       <View className="flex-row flex-wrap gap-2">
         {GROUPS.map((g) => (
           <Chip
@@ -140,5 +147,57 @@ function Entry({ event }: { readonly event: AuditEvent }) {
         </Text>
       ) : null}
     </Card>
+  );
+}
+
+/** Members worth a look: blocked booking attempts first, then no-shows. */
+function Flagged({ query }: { readonly query: ReturnType<typeof useFlaggedMembers> }) {
+  const zone = deviceTimeZone();
+  if (query.isPending) return <LoadingState label="Checking flagged members…" />;
+  if (query.isError) {
+    return <ErrorState error={query.error} onRetry={() => void query.refetch()} />;
+  }
+  return (
+    <View className="gap-3">
+      <Text accessibilityRole="header" className="text-lg font-semibold text-text">
+        Flagged members
+      </Text>
+      <Text className="text-sm text-text-muted">
+        Bookings refused by the location rule, and missed bookings. Open a member to suspend them.
+      </Text>
+      {query.data.length === 0 ? (
+        <Text className="text-sm text-text-muted">Nobody is flagged.</Text>
+      ) : (
+        query.data.map((f: FlaggedMember) => (
+          <Link
+            key={f.user.id}
+            href={{ pathname: '/staff/users', params: { user: f.user.id } }}
+            asChild
+          >
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`${f.user.name}: ${f.blockedAttempts} blocked, ${f.noShows} no-shows`}
+              className="gap-1 rounded-xl border border-border bg-surface p-4 hover:bg-surface-muted"
+            >
+              <View className="flex-row flex-wrap items-center justify-between gap-2">
+                <Text className="text-base font-semibold text-text">
+                  {f.user.name}
+                  {f.user.status === 'suspended' ? ' · suspended' : ''}
+                </Text>
+                <Text className="text-sm text-text">
+                  {f.blockedAttempts} blocked · {f.noShows} no-shows
+                </Text>
+              </View>
+              {f.lastEvent ? (
+                <Text className="text-sm text-text-muted">
+                  Latest: {f.lastEvent.description},{' '}
+                  {formatInZone(f.lastEvent.at, zone, `dd/MM/yyyy ${TIME_FORMAT}`)}
+                </Text>
+              ) : null}
+            </Pressable>
+          </Link>
+        ))
+      )}
+    </View>
   );
 }

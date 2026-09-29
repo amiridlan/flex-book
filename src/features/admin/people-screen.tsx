@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
@@ -43,7 +44,9 @@ export function PeopleScreen() {
   const locations = useLocations();
   const { wide } = useLayout();
   const [filter, setFilter] = useState<Filter>('everyone');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // `?user=<id>` opens that person, e.g. from the flagged list on the Activity page.
+  const { user: linkedUser } = useLocalSearchParams<{ user?: string }>();
+  const [selectedId, setSelectedId] = useState<string | null>(linkedUser ?? null);
   const [inviting, setInviting] = useState(false);
 
   if (!hasPermission(me, 'users.manage')) {

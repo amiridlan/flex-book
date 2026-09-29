@@ -60,6 +60,16 @@ test.describe('super admin', () => {
     await expect(onScreen(page.getByText('Invited staff · Aina Karim'))).toBeVisible();
   });
 
+  test('flagged members link straight to their account', async ({ page, wide }) => {
+    await signIn(page, 'superAdmin');
+    await openSection(page, wide, 'Activity');
+    const ryan = onScreen(page.getByLabel(/^Ryan Ong: 3 blocked/));
+    await expect(ryan).toBeVisible();
+    await ryan.click();
+    await expect(onScreen(page.getByText('ryan@example.com', { exact: true }))).toBeVisible();
+    await expect(onScreen(page.getByRole('button', { name: 'Reactivate account' }))).toBeVisible();
+  });
+
   test('other roles never see the admin screens', async ({ page, wide }) => {
     await signIn(page, 'hiveStaff');
     await expect(onScreen(page.getByText(/^Today · Bangsar Loft/))).toBeVisible();

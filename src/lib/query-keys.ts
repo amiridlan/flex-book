@@ -20,6 +20,7 @@ export const queryKeys = {
     all: ['admin'] as const,
     users: ['admin', 'users'] as const,
     audit: ['admin', 'audit'] as const,
+    flags: ['admin', 'flags'] as const,
   },
   staff: {
     all: ['staff'] as const,

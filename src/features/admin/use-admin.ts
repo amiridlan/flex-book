@@ -12,6 +12,10 @@ export function useAuditTrail() {
   return useQuery({ queryKey: queryKeys.admin.audit, queryFn: () => adminRepository.auditTrail() });
 }
 
+export function useFlaggedMembers() {
+  return useQuery({ queryKey: queryKeys.admin.flags, queryFn: () => adminRepository.flagged() });
+}
+
 /** After any admin change, the people list, the audit trail and scoped data are stale. */
 export function useAdminChanged() {
   const queryClient = useQueryClient();

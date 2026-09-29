@@ -1282,6 +1282,58 @@
         }
       }
     },
+    "/admin/flags": {
+      "get": {
+        "operationId": "listFlaggedMembers",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Members with blocked booking attempts or no-shows, worst first (super admin)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FlaggedMember"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/audit": {
       "get": {
         "operationId": "listAuditEvents",
@@ -2688,6 +2740,73 @@
           "email",
           "role",
           "assignments"
+        ],
+        "additionalProperties": false
+      },
+      "FlaggedMember": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "suspended"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "email",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "blockedAttempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "noShows": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastEvent": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "at",
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "user",
+          "blockedAttempts",
+          "noShows",
+          "lastEvent"
         ],
         "additionalProperties": false
       },
