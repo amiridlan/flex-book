@@ -189,7 +189,12 @@ export const STACK: readonly StackGroup[] = [
       {
         name: 'Jest + Testing Library',
         version: '29 · 14',
-        role: 'Unit tests for the rules, and full sign-in-to-booking flows on phone and desktop layouts.',
+        role: 'Fast tests without a browser: the rules (distance, time zones, money) and screen flows on phone and desktop layouts.',
+      },
+      {
+        name: 'Playwright',
+        version: '1.63',
+        role: 'End-to-end tests in a real Chrome browser at laptop and phone sizes: booking, the distance rule with simulated GPS, staff check-in and walk-ins, time zones.',
       },
       {
         name: 'PHPUnit + Pint',
@@ -204,7 +209,7 @@ export const STACK: readonly StackGroup[] = [
       {
         name: 'GitHub Actions',
         version: 'CI',
-        role: 'Runs typecheck, lint, tests and the web build for the app, plus the Laravel tests, on every push and pull request.',
+        role: 'Runs typecheck, lint, unit tests, the web build and the Playwright tests for the app, plus the Laravel tests, on every push and pull request.',
       },
       {
         name: 'EAS Workflows + EAS Update',
@@ -279,7 +284,7 @@ export const HOSTING: readonly HostingRow[] = [
   {
     part: 'Checks',
     where: 'GitHub Actions',
-    how: 'App checks, web build and Laravel tests on every push and pull request.',
+    how: 'App checks, web build, Playwright end-to-end tests and Laravel tests on every push and pull request.',
     status: 'live',
   },
   {
