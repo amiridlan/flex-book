@@ -109,6 +109,24 @@ test.describe('brand-coloured navigation', () => {
 
     await nav.getByRole('link', { name: 'Explore', exact: true }).click();
     await expect.poll(() => paintedBackground(nav)).toBe(NEUTRAL);
+    await expect(nav.getByText('All brands', { exact: true })).toBeVisible();
+  });
+
+  test.describe('with reduced motion', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('the colour and brand name switch without animating', async ({ page, wide }) => {
+      test.skip(!wide, 'desktop only');
+      await signIn(page, 'member');
+      const nav = page.getByRole('navigation', { name: 'Main' });
+      await expect(nav.getByText('All brands', { exact: true })).toBeVisible();
+
+      await onScreen(page.getByLabel(/^Bangsar Loft/)).click();
+      await expect(nav.getByText('Hive', { exact: true })).toBeVisible();
+      // No outgoing name left sliding away, and no colour sweep in progress.
+      await expect(nav.getByText('All brands', { exact: true })).toHaveCount(0);
+      expect(await paintedBackground(nav)).toBe(HIVE);
+    });
   });
 
   test('staff navigation wears their brand', async ({ page, wide }) => {
