@@ -70,9 +70,21 @@ export const staffBookingSchema = bookingSchema.extend({
 export type StaffBooking = z.infer<typeof staffBookingSchema>;
 
 /** Front-desk check-in: a scanned QR (booking id + token) or a typed booking code. */
+const checkInByQr = z.object({ bookingId: z.string().min(1), token: z.string().min(1) });
+const checkInByCode = z.object({
+  code: z.string().regex(/^FXB-[A-Z2-9]{4}$/, 'Enter a code like FXB-7QLM.'),
+});
+/** What the front desk scanned (QR) or typed (booking code). */
+export type CheckInTarget = z.infer<typeof checkInByQr> | z.infer<typeof checkInByCode>;
+
+/**
+ * A front-desk check-in also names the desk's location: a guest can only be
+ * checked in at the location they booked, where they are standing.
+ */
+const deskLocation = { locationId: z.string().min(1) };
 export const staffCheckInSchema = z.union([
-  z.object({ bookingId: z.string().min(1), token: z.string().min(1) }),
-  z.object({ code: z.string().regex(/^FXB-[A-Z2-9]{4}$/, 'Enter a code like FXB-7QLM.') }),
+  checkInByQr.extend(deskLocation),
+  checkInByCode.extend(deskLocation),
 ]);
 export type StaffCheckInInput = z.infer<typeof staffCheckInSchema>;
 

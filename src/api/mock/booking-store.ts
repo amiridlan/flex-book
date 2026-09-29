@@ -369,6 +369,14 @@ export function createBookingStore(random: () => number, now: () => number) {
       if (!booking || !location || !canSeeLocation(user, location)) {
         return json(404, { message: 'No booking with that code at your locations.' });
       }
+      // The guest is at this desk, so the booking must be for this location.
+      if (location.id !== input.locationId) {
+        return validationError({
+          locationId: [
+            `This booking is at ${location.name}, ${location.city}. Check the guest in at that location.`,
+          ],
+        });
+      }
       if ('token' in input && input.token !== booking.qrToken) {
         return validationError({
           token: ['This QR code is not valid. Ask the member to refresh it.'],

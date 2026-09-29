@@ -2120,11 +2120,16 @@
               "token": {
                 "type": "string",
                 "minLength": 1
+              },
+              "locationId": {
+                "type": "string",
+                "minLength": 1
               }
             },
             "required": [
               "bookingId",
-              "token"
+              "token",
+              "locationId"
             ],
             "additionalProperties": false
           },
@@ -2134,10 +2139,15 @@
               "code": {
                 "type": "string",
                 "pattern": "^FXB-[A-Z2-9]{4}$"
+              },
+              "locationId": {
+                "type": "string",
+                "minLength": 1
               }
             },
             "required": [
-              "code"
+              "code",
+              "locationId"
             ],
             "additionalProperties": false
           }

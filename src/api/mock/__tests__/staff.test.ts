@@ -10,6 +10,7 @@ import { createMockServer } from '../mock-server';
 // Tuesday 29/09/2026, 10:00 AM in Kuala Lumpur. Bangsar Loft (Hive) is open 7 AM – 10 PM daily.
 const NOW = Date.parse('2026-09-29T02:00:00Z');
 const HIVE_KL = 'loc_hive_kul';
+const HIVE_SG = 'loc_hive_sin';
 
 async function setup() {
   const server = createMockServer({ latencyMs: 0, failureRate: 0, now: () => NOW });
@@ -46,12 +47,28 @@ describe('staff API', () => {
     await as('daniel.hive@example.com');
     const [, , arriving, later] = await staff.bookings(HIVE_KL);
 
-    await expect(staff.checkIn({ code: arriving!.code })).resolves.toMatchObject({
+    await expect(
+      staff.checkIn({ code: arriving!.code, locationId: HIVE_KL }),
+    ).resolves.toMatchObject({
       status: 'checked_in',
     });
-    await expect(staff.checkIn({ code: later!.code })).rejects.toMatchObject({
+    await expect(staff.checkIn({ code: later!.code, locationId: HIVE_KL })).rejects.toMatchObject({
       kind: 'validation',
       fieldErrors: { status: [expect.stringContaining('Check-in is open from')] },
+    });
+  });
+
+  it('only checks a guest in at the location they booked', async () => {
+    const { as, staff } = await setup();
+    await as('daniel.hive@example.com');
+    const [, , arriving] = await staff.bookings(HIVE_KL);
+
+    // Same staff member, but the desk is set to Kallang Works in Singapore.
+    await expect(
+      staff.checkIn({ code: arriving!.code, locationId: HIVE_SG }),
+    ).rejects.toMatchObject({
+      kind: 'validation',
+      fieldErrors: { locationId: [expect.stringContaining('This booking is at Bangsar Loft')] },
     });
   });
 
@@ -61,7 +78,7 @@ describe('staff API', () => {
     const [, , arriving] = await staff.bookings(HIVE_KL);
 
     await expect(
-      staff.checkIn({ bookingId: arriving!.id, token: 'qr_FORGED' }),
+      staff.checkIn({ bookingId: arriving!.id, token: 'qr_FORGED', locationId: HIVE_KL }),
     ).rejects.toMatchObject({
       fieldErrors: { token: [expect.stringContaining('not valid')] },
     });
@@ -74,7 +91,9 @@ describe('staff API', () => {
 
     await as('priya.tcg@example.com');
     await expect(staff.bookings(HIVE_KL)).rejects.toMatchObject({ kind: 'not_found' });
-    await expect(staff.checkIn({ code: arriving!.code })).rejects.toMatchObject({
+    await expect(
+      staff.checkIn({ code: arriving!.code, locationId: HIVE_KL }),
+    ).rejects.toMatchObject({
       kind: 'not_found',
     });
   });
