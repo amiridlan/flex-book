@@ -1,5 +1,5 @@
 /**
- * DEMO ONLY: one-tap accounts for the interview demo. They exist only in the mock
+ * DEMO ONLY: one-tap accounts for the demo. They exist only in the mock
  * API. A real build shows an email/password form backed by Laravel Sanctum.
  */
 export type DemoAccount = {

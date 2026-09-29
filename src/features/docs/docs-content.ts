@@ -22,7 +22,7 @@ export const OVERVIEW =
   'FlexiSpace is a booking app for a coworking group with three brands (The Common Ground, Hive and Clustered) across Malaysia, Singapore, Hong Kong, Vietnam, Thailand and Australia. Members book desks and rooms at any brand in any country. Front-desk staff see only the brand or location they work for, check members in and add walk-ins. One codebase runs on Android, iOS and the web.';
 
 export const DISCLAIMER =
-  'Concept demo built for a job interview. Not affiliated with Flexi Group. Every person, company and booking in it is fictional.';
+  'Not affiliated with Flexi Group. Every person, company and booking in this demo is fictional.';
 
 export const HIGHLIGHTS: readonly { readonly title: string; readonly body: string }[] = [
   {

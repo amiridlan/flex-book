@@ -2,7 +2,7 @@
 
 A coworking space booking app for a multi-brand operator across Asia Pacific and Australia, built with React Native (Expo) and TypeScript.
 
-> Concept demo built for an interview. Not affiliated with Flexi Group. All data is fictional.
+> Not affiliated with Flexi Group. All data is fictional.
 
 ## Highlights
 
