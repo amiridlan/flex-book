@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { brandIdSchema } from './brand';
 
-export const roleSchema = z.enum(['member', 'staff', 'brand_admin', 'group_admin']);
+export const roleSchema = z.enum(['member', 'staff', 'brand_admin', 'group_admin', 'super_admin']);
 export type Role = z.infer<typeof roleSchema>;
 
 export const permissionSchema = z.enum([
@@ -17,6 +17,11 @@ export const permissionSchema = z.enum([
   'spaces.manage',
   'reports.view',
   'brands.manage',
+  // Super admin only: people, audit trail, overrides and location settings.
+  'users.manage',
+  'audit.view',
+  'bookings.override',
+  'locations.manage',
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 

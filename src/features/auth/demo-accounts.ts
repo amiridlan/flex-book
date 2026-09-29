@@ -34,6 +34,11 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
     title: 'Group admin',
     description: 'Sarah · all brands',
   },
+  {
+    email: 'farid.super@example.com',
+    title: 'Super admin',
+    description: 'Farid · manages people, access and settings',
+  },
 ];
 
 export const DEMO_PASSWORD = 'demo1234';

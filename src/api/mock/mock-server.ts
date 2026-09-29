@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { HttpRequest, HttpResponse, HttpTransport } from '../client/transport';
+import { updateAccessSchema } from '../schemas/admin';
 import {
   checkInSchema,
   createBookingSchema,
@@ -8,8 +9,9 @@ import {
   walkInSchema,
 } from '../schemas/booking';
 import type { Location } from '../schemas/location';
-import type { User } from '../schemas/user';
+import type { Permission, User } from '../schemas/user';
 import { canSeeLocation } from './access';
+import { createAdminStore } from './admin-store';
 import { buildAvailability } from './availability';
 import { createBookingStore } from './booking-store';
 import { BRANDS } from './db/brands';
@@ -58,12 +60,14 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
   const router = createRouter();
   const bookings = createBookingStore(random, now);
   bookings.seed(USERS.find((u) => u.role === 'member'));
+  const admin = createAdminStore(now);
 
+  /** Read fresh on every request, so an access change applies to the user's next call. */
   function currentUser(request: HttpRequest): User | null {
     const header = request.headers?.Authorization ?? '';
     const token = header.startsWith('Bearer ') ? header.slice(7) : '';
     const userId = sessions.get(token);
-    return USERS.find((u) => u.id === userId) ?? null;
+    return userId ? admin.findById(userId) : null;
   }
 
   function authed(
@@ -89,7 +93,8 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
   router.on('POST', '/auth/login', ({ request }) => {
     const body = loginBodySchema.safeParse(request.body);
     if (!body.success) return validationError(fieldErrors(body.error.issues));
-    const user = USERS.find((u) => u.email.toLowerCase() === body.data.email.toLowerCase());
+    const account = admin.findByEmail(body.data.email);
+    const user = account ? admin.findById(account.id) : null;
     if (!user || body.data.password !== DEMO_PASSWORD) {
       return validationError({ email: ['These credentials do not match our records.'] });
     }
@@ -260,6 +265,44 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       if (!body.success) return validationError(fieldErrors(body.error.issues));
       return bookings.walkIn(user, body.data);
     }),
+  );
+
+  /** Admin endpoints each need one permission; only super admins hold them. */
+  function adminOnly(
+    permission: Permission,
+    handler: (
+      user: User,
+      request: HttpRequest,
+      params: Readonly<Record<string, string>>,
+    ) => HttpResponse,
+  ) {
+    return authed((user, request, params) =>
+      user.permissions.includes(permission)
+        ? handler(user, request, params)
+        : json(403, { message: 'Super admin access only.' }),
+    );
+  }
+
+  router.on(
+    'GET',
+    '/admin/users',
+    adminOnly('users.manage', () => admin.list()),
+  );
+
+  router.on(
+    'PATCH',
+    '/admin/users/:id/access',
+    adminOnly('users.manage', (user, request, params) => {
+      const body = updateAccessSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      return admin.updateAccess(user, params.id ?? '', body.data);
+    }),
+  );
+
+  router.on(
+    'GET',
+    '/admin/audit',
+    adminOnly('audit.view', () => admin.auditTrail()),
   );
 
   return {

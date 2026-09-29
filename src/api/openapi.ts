@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { adminUserSchema, auditEventSchema, updateAccessSchema } from './schemas/admin';
 import { availabilitySchema } from './schemas/availability';
 import {
   bookingSchema,
@@ -29,6 +30,9 @@ const COMPONENTS = {
   Booking: bookingSchema,
   StaffBooking: staffBookingSchema,
   User: userSchema,
+  AdminUser: adminUserSchema,
+  AuditEvent: auditEventSchema,
+  UpdateAccessRequest: updateAccessSchema,
   CreateBookingRequest: createBookingSchema,
   CheckInRequest: checkInSchema,
   StaffCheckInRequest: staffCheckInSchema,
@@ -224,6 +228,34 @@ const ENDPOINTS: readonly Endpoint[] = [
     data: 'StaffBooking',
     status: 201,
     errors: [401, 403, 422],
+  },
+  {
+    method: 'get',
+    path: '/admin/users',
+    operationId: 'listUsers',
+    summary: 'Every account with its role, access and status (super admin)',
+    tag: 'Admin',
+    data: ['AdminUser'],
+    errors: [401, 403],
+  },
+  {
+    method: 'patch',
+    path: '/admin/users/{id}/access',
+    operationId: 'updateUserAccess',
+    summary: 'Replace a user’s role and brand/location access (super admin)',
+    tag: 'Admin',
+    body: 'UpdateAccessRequest',
+    data: 'AdminUser',
+    errors: [401, 403, 404, 422],
+  },
+  {
+    method: 'get',
+    path: '/admin/audit',
+    operationId: 'listAuditEvents',
+    summary: 'Audit trail of admin actions, newest first (super admin)',
+    tag: 'Admin',
+    data: ['AuditEvent'],
+    errors: [401, 403],
   },
 ];
 

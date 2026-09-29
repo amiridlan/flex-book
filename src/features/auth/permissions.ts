@@ -15,4 +15,5 @@ export const ROLE_LABELS: Readonly<Record<User['role'], string>> = {
   staff: 'Staff',
   brand_admin: 'Brand admin',
   group_admin: 'Group admin',
+  super_admin: 'Super admin',
 };

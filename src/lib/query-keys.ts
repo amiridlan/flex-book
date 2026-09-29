@@ -16,6 +16,11 @@ export const queryKeys = {
     mine: ['bookings', 'mine'] as const,
     detail: (id: string) => ['bookings', 'detail', id] as const,
   },
+  admin: {
+    all: ['admin'] as const,
+    users: ['admin', 'users'] as const,
+    audit: ['admin', 'audit'] as const,
+  },
   staff: {
     all: ['staff'] as const,
     bookings: (locationId: string) => ['staff', 'bookings', locationId] as const,

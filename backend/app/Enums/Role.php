@@ -8,6 +8,7 @@ enum Role: string
     case Staff = 'staff';
     case BrandAdmin = 'brand_admin';
     case GroupAdmin = 'group_admin';
+    case SuperAdmin = 'super_admin';
 
     /**
      * Permissions are derived from the role, never stored per user, so the app
@@ -28,12 +29,16 @@ enum Role: string
             self::Staff => $staff,
             self::BrandAdmin => $brandAdmin,
             self::GroupAdmin => [...$brandAdmin, 'brands.manage'],
+            self::SuperAdmin => [
+                ...$brandAdmin, 'brands.manage',
+                'users.manage', 'audit.view', 'bookings.override', 'locations.manage',
+            ],
         };
     }
 
-    /** Members and group admins see every location; others only their assignments. */
+    /** Members, group admins and super admins see every location; others only their assignments. */
     public function seesAllLocations(): bool
     {
-        return $this === self::Member || $this === self::GroupAdmin;
+        return in_array($this, [self::Member, self::GroupAdmin, self::SuperAdmin], true);
     }
 }

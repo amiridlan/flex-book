@@ -984,6 +984,199 @@
           }
         }
       }
+    },
+    "/admin/users": {
+      "get": {
+        "operationId": "listUsers",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Every account with its role, access and status (super admin)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AdminUser"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/{id}/access": {
+      "patch": {
+        "operationId": "updateUserAccess",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Replace a user’s role and brand/location access (super admin)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AdminUser"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller’s scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (Laravel format: message + errors per field)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/audit": {
+      "get": {
+        "operationId": "listAuditEvents",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Audit trail of admin actions, newest first (super admin)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AuditEvent"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1960,7 +2153,8 @@
               "member",
               "staff",
               "brand_admin",
-              "group_admin"
+              "group_admin",
+              "super_admin"
             ]
           },
           "assignments": {
@@ -2003,7 +2197,11 @@
                 "spaces.block",
                 "spaces.manage",
                 "reports.view",
-                "brands.manage"
+                "brands.manage",
+                "users.manage",
+                "audit.view",
+                "bookings.override",
+                "locations.manage"
               ]
             }
           }
@@ -2015,6 +2213,248 @@
           "role",
           "assignments",
           "permissions"
+        ],
+        "additionalProperties": false
+      },
+      "AdminUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "staff",
+              "brand_admin",
+              "group_admin",
+              "super_admin"
+            ]
+          },
+          "assignments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "brandId": {
+                  "type": "string",
+                  "enum": [
+                    "tcg",
+                    "hive",
+                    "clustered"
+                  ]
+                },
+                "locationId": {
+                  "nullable": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "brandId",
+                "locationId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "locations.view",
+                "bookings.create",
+                "bookings.view_own",
+                "staff.dashboard",
+                "bookings.view_location",
+                "bookings.check_in",
+                "bookings.walk_in",
+                "spaces.block",
+                "spaces.manage",
+                "reports.view",
+                "brands.manage",
+                "users.manage",
+                "audit.view",
+                "bookings.override",
+                "locations.manage"
+              ]
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "assignments",
+          "permissions",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "AuditEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "access.updated",
+              "account.suspended",
+              "account.reactivated",
+              "staff.invited",
+              "booking.cancelled",
+              "booking.checked_in",
+              "location.closed",
+              "location.reopened",
+              "space.closed",
+              "space.reopened",
+              "rules.updated"
+            ]
+          },
+          "actor": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "booking",
+                  "location",
+                  "space"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "label"
+            ],
+            "additionalProperties": false
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "from": {
+                  "type": "string"
+                },
+                "to": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "reason": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "action",
+          "actor",
+          "target",
+          "changes",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateAccessRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "staff",
+              "brand_admin",
+              "group_admin",
+              "super_admin"
+            ]
+          },
+          "assignments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "brandId": {
+                  "type": "string",
+                  "enum": [
+                    "tcg",
+                    "hive",
+                    "clustered"
+                  ]
+                },
+                "locationId": {
+                  "nullable": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "brandId",
+                "locationId"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "role",
+          "assignments"
         ],
         "additionalProperties": false
       },
