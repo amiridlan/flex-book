@@ -122,7 +122,7 @@ export default function StaffTodayScreen() {
                 bookings={board.data}
                 now={now}
                 pendingCode={pendingCode}
-                onCheckIn={(code) => checkIn.mutate({ code })}
+                onCheckIn={(code) => checkIn.mutate({ code, locationId: current.id })}
               />
             ) : (
               <>
@@ -132,7 +132,7 @@ export default function StaffTodayScreen() {
                       key={b.id}
                       booking={b}
                       checkingIn={pendingCode === b.code}
-                      onCheckIn={() => checkIn.mutate({ code: b.code })}
+                      onCheckIn={() => checkIn.mutate({ code: b.code, locationId: current.id })}
                     />
                   ))}
                 </Section>
