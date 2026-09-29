@@ -24,6 +24,13 @@ export const updateStatusSchema = z.object({
 });
 export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
 
+/** Super admin override on any booking. The reason goes into the audit trail. */
+export const overrideBookingSchema = z.object({
+  action: z.enum(['cancel', 'check_in']),
+  reason: z.string().trim().min(3, 'Say why, for the activity log.').max(200),
+});
+export type OverrideBookingInput = z.infer<typeof overrideBookingSchema>;
+
 /** Roles a super admin can invite. Members sign up themselves. */
 export const invitableRoleSchema = z.enum(['staff', 'brand_admin', 'group_admin', 'super_admin']);
 

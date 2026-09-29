@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { staffRepository } from '@/api';
+import { adminRepository, staffRepository } from '@/api';
+import type { OverrideBookingInput } from '@/api/schemas/admin';
 import type { StaffCheckInInput, WalkInInput } from '@/api/schemas/booking';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -10,6 +11,16 @@ export function useStaffBookings(locationId: string | undefined) {
     queryKey: queryKeys.staff.bookings(locationId ?? ''),
     queryFn: () => staffRepository.bookings(locationId ?? ''),
     enabled: Boolean(locationId),
+    refetchInterval: 60_000,
+  });
+}
+
+/** Admins: today at every location in scope, for the all-locations board. */
+export function useStaffOverview(enabled: boolean) {
+  return useQuery({
+    queryKey: [...queryKeys.staff.all, 'overview'] as const,
+    queryFn: () => staffRepository.allBookings(),
+    enabled,
     refetchInterval: 60_000,
   });
 }
@@ -36,5 +47,19 @@ export function useWalkIn() {
   return useMutation({
     mutationFn: (input: WalkInInput) => staffRepository.walkIn(input),
     onSuccess: onChanged,
+  });
+}
+
+/** Super admin: cancel or manually check in any booking, with a reason for the log. */
+export function useOverrideBooking() {
+  const onChanged = useStaffChanged();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, input }: { bookingId: string; input: OverrideBookingInput }) =>
+      adminRepository.overrideBooking(bookingId, input),
+    onSuccess: () => {
+      onChanged();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
   });
 }

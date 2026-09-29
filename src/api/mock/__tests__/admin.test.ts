@@ -3,6 +3,7 @@ import { createAdminRepository } from '../../repositories/admin-repository';
 import { createAuthRepository } from '../../repositories/auth-repository';
 import { createBookingRepository } from '../../repositories/booking-repository';
 import { createLocationRepository } from '../../repositories/location-repository';
+import { createStaffRepository } from '../../repositories/staff-repository';
 import { DEMO_PASSWORD } from '../db/users';
 import { createMockServer } from '../mock-server';
 
@@ -19,6 +20,7 @@ async function setup() {
   return {
     admin: createAdminRepository(api),
     bookings: createBookingRepository(api),
+    staff: createStaffRepository(api),
     locations: createLocationRepository(api),
     async as(email: string) {
       current = email;
@@ -220,5 +222,51 @@ describe('super admin API', () => {
       blockedAttempts: 1,
       lastEvent: { description: 'Fake GPS · Bangsar Loft' },
     });
+  });
+
+  it('shows admins every location on one board, and refuses front-desk staff', async () => {
+    const { as, staff } = await setup();
+    await as(SUPER);
+    const all = await staff.allBookings();
+    expect(new Set(all.map((b) => b.location.id)).size).toBeGreaterThan(1);
+
+    await as('minh.clustered@example.com'); // brand admin: only Clustered
+    const clustered = await staff.allBookings();
+    expect(clustered.every((b) => b.location.brandId === 'clustered')).toBe(true);
+
+    await as(DANIEL);
+    await expect(staff.allBookings()).rejects.toMatchObject({ kind: 'forbidden' });
+  });
+
+  it('overrides a booking with a reason and logs it', async () => {
+    const { as, admin, staff } = await setup();
+    await as(SUPER);
+    const board = await staff.allBookings();
+    const target = board.find((b) => b.status === 'confirmed' || b.status === 'no_show');
+    expect(target).toBeDefined();
+
+    await expect(
+      admin.overrideBooking(target!.id, { action: 'check_in', reason: '' }),
+    ).rejects.toMatchObject({ kind: 'validation' });
+
+    const done = await admin.overrideBooking(target!.id, {
+      action: 'check_in',
+      reason: 'Guest arrived; the desk was offline',
+    });
+    expect(done.status).toBe('checked_in');
+    expect((await admin.auditTrail())[0]).toMatchObject({
+      action: 'booking.checked_in',
+      target: { type: 'booking' },
+      reason: 'Guest arrived; the desk was offline',
+    });
+
+    await expect(
+      admin.overrideBooking(target!.id, { action: 'cancel', reason: 'Too late now' }),
+    ).rejects.toMatchObject({ fieldErrors: { action: [expect.stringContaining('checked-in')] } });
+
+    await as(DANIEL);
+    await expect(
+      admin.overrideBooking(target!.id, { action: 'cancel', reason: 'Not allowed' }),
+    ).rejects.toMatchObject({ kind: 'forbidden' });
   });
 });

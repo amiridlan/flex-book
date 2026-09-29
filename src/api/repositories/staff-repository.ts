@@ -12,6 +12,8 @@ import { resourceSchema } from '../schemas/common';
 export type StaffRepository = {
   /** Bookings at one location on a local date (defaults to today there). */
   bookings(locationId: string, date?: string): Promise<readonly StaffBooking[]>;
+  /** Today at every location in scope. Admins only. */
+  allBookings(): Promise<readonly StaffBooking[]>;
   checkIn(input: StaffCheckInInput): Promise<StaffBooking>;
   walkIn(input: WalkInInput): Promise<StaffBooking>;
 };
@@ -28,6 +30,11 @@ export function createStaffRepository(api: ApiClient): StaffRepository {
         { query: { date } },
       );
       return response.data;
+    },
+    async allBookings() {
+      return (
+        await api.request('GET', '/staff/bookings', z.object({ data: z.array(staffBookingSchema) }))
+      ).data;
     },
     async checkIn(input) {
       return (await api.request('POST', '/staff/check-ins', one, { body: input })).data;

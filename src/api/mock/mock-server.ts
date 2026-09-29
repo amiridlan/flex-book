@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 import type { HttpRequest, HttpResponse, HttpTransport } from '../client/transport';
-import { inviteStaffSchema, updateAccessSchema, updateStatusSchema } from '../schemas/admin';
+import {
+  inviteStaffSchema,
+  overrideBookingSchema,
+  updateAccessSchema,
+  updateStatusSchema,
+} from '../schemas/admin';
 import {
   checkInSchema,
   createBookingSchema,
@@ -254,6 +259,16 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
   );
 
   router.on(
+    'GET',
+    '/staff/bookings',
+    staffOnly((user) =>
+      user.permissions.includes('reports.view')
+        ? bookings.staffListAll(user)
+        : json(403, { message: 'The all-locations board is for admins.' }),
+    ),
+  );
+
+  router.on(
     'POST',
     '/staff/check-ins',
     staffOnly((user, request) => {
@@ -322,6 +337,26 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       const body = inviteStaffSchema.safeParse(request.body);
       if (!body.success) return validationError(fieldErrors(body.error.issues));
       return admin.invite(user, body.data);
+    }),
+  );
+
+  router.on(
+    'POST',
+    '/admin/bookings/:id/override',
+    adminOnly('bookings.override', (user, request, params) => {
+      const body = overrideBookingSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      const id = params.id ?? '';
+      const result = bookings.override(id, body.data.action);
+      if (result.label && result.from && result.to) {
+        admin.record(user, {
+          action: body.data.action === 'cancel' ? 'booking.cancelled' : 'booking.checked_in',
+          target: { type: 'booking', id, label: result.label },
+          changes: [{ field: 'status', from: result.from, to: result.to }],
+          reason: body.data.reason,
+        });
+      }
+      return result.response;
     }),
   );
 

@@ -461,6 +461,57 @@ export function createBookingStore(random: () => number, now: () => number) {
     },
 
     /** Staff board: one location's bookings on a local date. 404 outside the staff scope. */
+    /** Today's bookings at every location in the user's scope (each in its own time zone). */
+    staffListAll(user: User): HttpResponse {
+      const visible = LOCATIONS.filter((l) => canSeeLocation(user, l));
+      const list = [...bookings.values()]
+        .filter((b) => {
+          const location = visible.find((l) => l.id === b.location.id);
+          return (
+            location !== undefined &&
+            formatInZone(b.startsAt, location.timezone, 'yyyy-MM-dd') ===
+              todayIn(location.timezone, now())
+          );
+        })
+        .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
+        .map(presentForStaff);
+      return json(200, { data: list });
+    },
+
+    /**
+     * Super admin override: cancel a booking, or check the guest in outside the
+     * usual window (e.g. a no-show who did arrive). Returns the before/after status
+     * so the caller can log it.
+     */
+    override(
+      id: string,
+      action: 'cancel' | 'check_in',
+    ): { response: HttpResponse; label?: string; from?: string; to?: string } {
+      const booking = bookings.get(id);
+      if (!booking) return { response: json(404, { message: 'Booking not found.' }) };
+      const from = effectiveStatus(booking);
+      const allowed =
+        action === 'cancel' ? from === 'confirmed' : from === 'confirmed' || from === 'no_show';
+      if (!allowed) {
+        return {
+          response: validationError({
+            action: [`This booking is ${from.replace('_', '-')}, so it can’t be changed.`],
+          }),
+        };
+      }
+      const updated: StoredBooking =
+        action === 'cancel'
+          ? { ...booking, status: 'cancelled' }
+          : { ...booking, status: 'checked_in', checkedInAt: new Date(now()).toISOString() };
+      bookings.set(id, updated);
+      return {
+        response: json(200, { data: presentForStaff(updated) }),
+        label: `${booking.code} · ${booking.customer.name}`,
+        from,
+        to: updated.status,
+      };
+    },
+
     staffList(user: User, locationId: string, date: string | undefined): HttpResponse {
       const location = LOCATIONS.find((l) => l.id === locationId);
       if (!location || !canSeeLocation(user, location)) {

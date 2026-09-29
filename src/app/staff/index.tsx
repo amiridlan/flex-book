@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
 import { firstError } from '@/api/client/api-error';
@@ -8,15 +8,18 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-views';
 import { checkInWindowOpen } from '@/domain/booking-rules';
+import { OverridePanel } from '@/features/admin/override-panel';
+import { hasPermission } from '@/features/auth/permissions';
 import { useSessionStore } from '@/features/auth/session-store';
 import { LocationDropdown } from '@/features/staff/components/location-dropdown';
 import { LocationSwitcher } from '@/features/staff/components/location-switcher';
 import { StaffBrandScope } from '@/features/staff/components/staff-brand-scope';
 import { StaffBookingRow } from '@/features/staff/components/staff-booking-row';
-import { StaffBookingTable } from '@/features/staff/components/staff-booking-table';
-import { useStaffBookings, useStaffCheckIn } from '@/features/staff/use-staff';
+import { canOverride, StaffBookingTable } from '@/features/staff/components/staff-booking-table';
+import { useStaffLocationStore } from '@/features/staff/staff-location-store';
+import { useStaffBookings, useStaffCheckIn, useStaffOverview } from '@/features/staff/use-staff';
 import { useStaffLocation } from '@/features/staff/use-staff-location';
-import { formatInZone, offsetLabel, TIME_FORMAT } from '@/lib/time';
+import { deviceTimeZone, formatInZone, offsetLabel, TIME_FORMAT } from '@/lib/time';
 import { useLayout } from '@/lib/use-layout';
 import { useNow } from '@/lib/use-now';
 
@@ -44,10 +47,18 @@ function groupBookings(bookings: readonly StaffBooking[], now: number): Groups {
 export default function StaffTodayScreen() {
   const user = useSessionStore((s) => s.user);
   const { locations, all, current, setLocationId } = useStaffLocation();
-  const board = useStaffBookings(current?.id);
+  // Admins (brand admin and up) can see every location in scope on one board.
+  const canSeeOverview = hasPermission(user, 'reports.view') && all.length > 1;
+  const overviewOn = useStaffLocationStore((s) => s.overview) && canSeeOverview;
+  const showOverview = useStaffLocationStore((s) => s.showOverview);
+  const single = useStaffBookings(overviewOn ? undefined : current?.id);
+  const everywhere = useStaffOverview(overviewOn);
+  const board = overviewOn ? everywhere : single;
   const checkIn = useStaffCheckIn();
   const now = useNow(30_000);
   const { wide } = useLayout();
+  const canOverrideBookings = hasPermission(user, 'bookings.override');
+  const [overriding, setOverriding] = useState<StaffBooking | null>(null);
 
   if (locations.isPending) return <LoadingState label="Loading your locations…" />;
   if (locations.isError) {
@@ -76,94 +87,141 @@ export default function StaffTodayScreen() {
       ? checkIn.variables.code
       : null;
 
-  return (
-    <StaffBrandScope>
-      <Screen scroll>
-        <PageHeader
-          actions={
-            wide ? (
-              <LocationDropdown locations={all} current={current} onSelect={setLocationId} />
-            ) : undefined
-          }
-          title={`Today · ${current.name}`}
-          subtitle={`${formatInZone(now, current.timezone, 'EEE, dd/MM/yyyy')} · ${formatInZone(
-            now,
-            current.timezone,
-            TIME_FORMAT,
-          )} ${current.city} (${offsetLabel(current.timezone, now)}) · ${user?.name ?? ''}`}
+  const overview = canSeeOverview ? { active: overviewOn, onSelect: showOverview } : undefined;
+  const zone = deviceTimeZone();
+  const checkInAt = (b: StaffBooking) =>
+    checkIn.mutate({ code: b.code, locationId: b.location.id });
+  const openOverride = canOverrideBookings ? (b: StaffBooking) => setOverriding(b) : undefined;
+
+  const content = (
+    <Screen scroll>
+      <PageHeader
+        actions={
+          wide ? (
+            <LocationDropdown
+              locations={all}
+              current={current}
+              onSelect={setLocationId}
+              overview={overview}
+            />
+          ) : undefined
+        }
+        title={overviewOn ? 'Today · All locations' : `Today · ${current.name}`}
+        subtitle={
+          overviewOn
+            ? `${formatInZone(now, zone, 'EEE, dd/MM/yyyy')} · every location in its own local time · ${user?.name ?? ''}`
+            : `${formatInZone(now, current.timezone, 'EEE, dd/MM/yyyy')} · ${formatInZone(
+                now,
+                current.timezone,
+                TIME_FORMAT,
+              )} ${current.city} (${offsetLabel(current.timezone, now)}) · ${user?.name ?? ''}`
+        }
+      />
+      {wide ? null : (
+        <LocationSwitcher
+          locations={all}
+          currentId={current.id}
+          onSelect={setLocationId}
+          overview={overview}
         />
-        {wide ? null : (
-          <LocationSwitcher locations={all} currentId={current.id} onSelect={setLocationId} />
-        )}
+      )}
+      {overriding ? (
+        <OverridePanel
+          key={overriding.id}
+          booking={overriding}
+          onDone={() => setOverriding(null)}
+        />
+      ) : null}
 
-        {board.isPending ? (
-          <LoadingState label="Loading today’s bookings…" />
-        ) : board.isError ? (
-          <ErrorState error={board.error} onRetry={() => void board.refetch()} />
-        ) : board.data.length === 0 ? (
-          <EmptyState title="No bookings today" message="Walk-ins you add will appear here." />
-        ) : (
-          <View className="gap-5">
-            <View className="flex-row gap-2">
-              <Stat label="Arriving" value={groups.arriving.length} />
-              <Stat label="Later" value={groups.later.length} />
-              <Stat label="Checked in" value={groups.inside.length} />
-              <Stat label="No-shows" value={noShows} />
-            </View>
-
-            {checkInError ? (
-              <View accessibilityRole="alert" className="rounded-xl bg-danger-soft p-4">
-                <Text className="text-sm text-danger">{checkInError}</Text>
-              </View>
-            ) : null}
-
-            {wide ? (
-              <StaffBookingTable
-                bookings={board.data}
-                now={now}
-                pendingCode={pendingCode}
-                onCheckIn={(code) => checkIn.mutate({ code, locationId: current.id })}
-              />
-            ) : (
-              <>
-                <Section title="Arriving now" empty="Nobody due in the next 15 minutes.">
-                  {groups.arriving.map((b) => (
-                    <StaffBookingRow
-                      key={b.id}
-                      booking={b}
-                      checkingIn={pendingCode === b.code}
-                      onCheckIn={() => checkIn.mutate({ code: b.code, locationId: current.id })}
-                    />
-                  ))}
-                </Section>
-                <Section title="Later today" empty="No more bookings today.">
-                  {groups.later.map((b) => (
-                    <StaffBookingRow key={b.id} booking={b} />
-                  ))}
-                </Section>
-                <Section title="Checked in">
-                  {groups.inside.map((b) => (
-                    <StaffBookingRow key={b.id} booking={b} />
-                  ))}
-                </Section>
-                <Section title="No-shows and cancellations">
-                  {groups.closed.map((b) => (
-                    <StaffBookingRow key={b.id} booking={b} />
-                  ))}
-                </Section>
-              </>
-            )}
-            {noShows > 0 ? (
-              <Text className="text-xs text-text-muted">
-                No-shows are released automatically 15 minutes after the start, so the space can be
-                offered to walk-ins.
-              </Text>
-            ) : null}
+      {board.isPending ? (
+        <LoadingState label="Loading today’s bookings…" />
+      ) : board.isError ? (
+        <ErrorState error={board.error} onRetry={() => void board.refetch()} />
+      ) : board.data.length === 0 ? (
+        <EmptyState title="No bookings today" message="Walk-ins you add will appear here." />
+      ) : (
+        <View className="gap-5">
+          <View className="flex-row gap-2">
+            <Stat label="Arriving" value={groups.arriving.length} />
+            <Stat label="Later" value={groups.later.length} />
+            <Stat label="Checked in" value={groups.inside.length} />
+            <Stat label="No-shows" value={noShows} />
           </View>
-        )}
-      </Screen>
-    </StaffBrandScope>
+
+          {checkInError ? (
+            <View accessibilityRole="alert" className="rounded-xl bg-danger-soft p-4">
+              <Text className="text-sm text-danger">{checkInError}</Text>
+            </View>
+          ) : null}
+
+          {wide ? (
+            <StaffBookingTable
+              bookings={board.data}
+              now={now}
+              pendingCode={pendingCode}
+              onCheckIn={checkInAt}
+              showLocation={overviewOn}
+              onOverride={openOverride}
+            />
+          ) : (
+            <>
+              <Section title="Arriving now" empty="Nobody due in the next 15 minutes.">
+                {groups.arriving.map((b) => (
+                  <StaffBookingRow
+                    key={b.id}
+                    booking={b}
+                    checkingIn={pendingCode === b.code}
+                    onCheckIn={() => checkInAt(b)}
+                    showLocation={overviewOn}
+                    onOverride={openOverride ? () => openOverride(b) : undefined}
+                  />
+                ))}
+              </Section>
+              <Section title="Later today" empty="No more bookings today.">
+                {groups.later.map((b) => (
+                  <StaffBookingRow
+                    key={b.id}
+                    booking={b}
+                    showLocation={overviewOn}
+                    onOverride={openOverride && canOverride(b) ? () => openOverride(b) : undefined}
+                  />
+                ))}
+              </Section>
+              <Section title="Checked in">
+                {groups.inside.map((b) => (
+                  <StaffBookingRow
+                    key={b.id}
+                    booking={b}
+                    showLocation={overviewOn}
+                    onOverride={openOverride && canOverride(b) ? () => openOverride(b) : undefined}
+                  />
+                ))}
+              </Section>
+              <Section title="No-shows and cancellations">
+                {groups.closed.map((b) => (
+                  <StaffBookingRow
+                    key={b.id}
+                    booking={b}
+                    showLocation={overviewOn}
+                    onOverride={openOverride && canOverride(b) ? () => openOverride(b) : undefined}
+                  />
+                ))}
+              </Section>
+            </>
+          )}
+          {noShows > 0 ? (
+            <Text className="text-xs text-text-muted">
+              No-shows are released automatically 15 minutes after the start, so the space can be
+              offered to walk-ins.
+            </Text>
+          ) : null}
+        </View>
+      )}
+    </Screen>
   );
+
+  // The all-locations board spans every brand, so it keeps the neutral colours.
+  return overviewOn ? content : <StaffBrandScope>{content}</StaffBrandScope>;
 }
 
 function Stat({ label, value }: { readonly label: string; readonly value: number }) {

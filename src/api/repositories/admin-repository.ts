@@ -9,9 +9,11 @@ import {
   type AuditEvent,
   type FlaggedMember,
   type InviteStaffInput,
+  type OverrideBookingInput,
   type UpdateAccessInput,
   type UpdateStatusInput,
 } from '../schemas/admin';
+import { staffBookingSchema, type StaffBooking } from '../schemas/booking';
 import { resourceSchema } from '../schemas/common';
 
 export type AdminRepository = {
@@ -21,6 +23,7 @@ export type AdminRepository = {
   invite(input: InviteStaffInput): Promise<AdminUser>;
   auditTrail(): Promise<readonly AuditEvent[]>;
   flagged(): Promise<readonly FlaggedMember[]>;
+  overrideBooking(bookingId: string, input: OverrideBookingInput): Promise<StaffBooking>;
 };
 
 /** Super admin endpoints. The server checks the permission on every call. */
@@ -54,6 +57,16 @@ export function createAdminRepository(api: ApiClient): AdminRepository {
     async invite(input) {
       return (
         await api.request('POST', '/admin/users', resourceSchema(adminUserSchema), { body: input })
+      ).data;
+    },
+    async overrideBooking(bookingId, input) {
+      return (
+        await api.request(
+          'POST',
+          `/admin/bookings/${encodeURIComponent(bookingId)}/override`,
+          resourceSchema(staffBookingSchema),
+          { body: input },
+        )
       ).data;
     },
     async flagged() {

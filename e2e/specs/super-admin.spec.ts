@@ -70,11 +70,46 @@ test.describe('super admin', () => {
     await expect(onScreen(page.getByRole('button', { name: 'Reactivate account' }))).toBeVisible();
   });
 
+  test('all-locations board, then a manual check-in with a reason', async ({ page, wide }) => {
+    await signIn(page, 'superAdmin');
+    await expect(onScreen(page.getByText(/^Today · /))).toBeVisible();
+    if (wide) {
+      await page
+        .getByLabel(/^Location: /)
+        .filter({ visible: true })
+        .last()
+        .click();
+      await onScreen(page.getByRole('menuitem', { name: 'All locations' })).click();
+      await expect(onScreen(page.getByRole('columnheader', { name: 'Location' }))).toBeVisible();
+    } else {
+      await onScreen(page.getByRole('button', { name: 'All locations' })).click();
+    }
+    await expect(onScreen(page.getByText('Today · All locations'))).toBeVisible();
+
+    await onScreen(page.getByRole('button', { name: /^Override booking for / })).click();
+    await onScreen(page.getByLabel('Reason')).fill('Guest arrived; the scanner was down');
+    await onScreen(page.getByRole('button', { name: 'Check in manually' })).click();
+    await expect(page.getByLabel('Reason')).toHaveCount(0);
+
+    await openSection(page, wide, 'Activity');
+    await expect(onScreen(page.getByText(/^Checked in manually · FXB-/))).toBeVisible();
+    await expect(onScreen(page.getByText('Guest arrived; the scanner was down'))).toBeVisible();
+  });
+
   test('other roles never see the admin screens', async ({ page, wide }) => {
     await signIn(page, 'hiveStaff');
     await expect(onScreen(page.getByText(/^Today · Bangsar Loft/))).toBeVisible();
     const role = wide ? 'link' : 'tab';
     await expect(page.getByRole(role, { name: /People/ })).toHaveCount(0);
     await expect(page.getByRole(role, { name: /Activity/ })).toHaveCount(0);
+    // Front-desk staff get no all-locations board and no override buttons.
+    await expect(page.getByRole('button', { name: /^Override booking/ })).toHaveCount(0);
+    if (wide)
+      await page
+        .getByLabel(/^Location: /)
+        .filter({ visible: true })
+        .last()
+        .click();
+    await expect(page.getByText('All locations', { exact: true })).toHaveCount(0);
   });
 });

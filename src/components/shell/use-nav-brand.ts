@@ -4,6 +4,7 @@ import type { Brand } from '@/api/schemas/brand';
 import { useBooking } from '@/features/booking/use-bookings';
 import { useBrands } from '@/features/catalog/use-catalog';
 import { useLocation } from '@/features/locations/use-locations';
+import { useStaffLocationStore } from '@/features/staff/staff-location-store';
 import { useStaffLocation } from '@/features/staff/use-staff-location';
 
 /** `/locations/loc_hive_kul/...` -> `loc_hive_kul`. */
@@ -33,9 +34,15 @@ export function useMemberNavBrand(): Brand | undefined {
   return brandId ? brands.data?.find((b) => b.id === brandId) : undefined;
 }
 
-/** Staff navigation follows the brand of the location the desk is working at. */
+/**
+ * Staff navigation follows the brand of the location the desk is working at;
+ * the all-locations board spans every brand, so it stays neutral.
+ */
 export function useStaffNavBrand(): Brand | undefined {
   const { current } = useStaffLocation();
+  const overview = useStaffLocationStore((s) => s.overview);
+  const pathname = usePathname();
   const brands = useBrands();
+  if (overview && pathname === '/staff') return undefined;
   return current ? brands.data?.find((b) => b.id === current.brandId) : undefined;
 }

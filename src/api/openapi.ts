@@ -5,6 +5,7 @@ import {
   auditEventSchema,
   flaggedMemberSchema,
   inviteStaffSchema,
+  overrideBookingSchema,
   updateAccessSchema,
   updateStatusSchema,
 } from './schemas/admin';
@@ -43,6 +44,7 @@ const COMPONENTS = {
   UpdateStatusRequest: updateStatusSchema,
   InviteStaffRequest: inviteStaffSchema,
   FlaggedMember: flaggedMemberSchema,
+  OverrideBookingRequest: overrideBookingSchema,
   CreateBookingRequest: createBookingSchema,
   CheckInRequest: checkInSchema,
   StaffCheckInRequest: staffCheckInSchema,
@@ -219,6 +221,15 @@ const ENDPOINTS: readonly Endpoint[] = [
     ],
   },
   {
+    method: 'get',
+    path: '/staff/bookings',
+    operationId: 'listAllStaffBookings',
+    summary: 'Today at every location in scope, one board (brand admin and up)',
+    tag: 'Staff',
+    data: ['StaffBooking'],
+    errors: [401, 403],
+  },
+  {
     method: 'post',
     path: '/staff/check-ins',
     operationId: 'staffCheckIn',
@@ -278,6 +289,16 @@ const ENDPOINTS: readonly Endpoint[] = [
     data: 'AdminUser',
     status: 201,
     errors: [401, 403, 422],
+  },
+  {
+    method: 'post',
+    path: '/admin/bookings/{id}/override',
+    operationId: 'overrideBooking',
+    summary: 'Cancel or manually check in any booking, with a reason (super admin)',
+    tag: 'Admin',
+    body: 'OverrideBookingRequest',
+    data: 'StaffBooking',
+    errors: [401, 403, 404, 422],
   },
   {
     method: 'get',
