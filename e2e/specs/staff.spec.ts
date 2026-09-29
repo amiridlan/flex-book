@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 import {
   expect,
   onScreen,
@@ -9,6 +11,18 @@ import {
   signOut,
   test,
 } from '../fixtures';
+
+/** Sets the desk's location: the header dropdown on laptops, the chips on phones. */
+async function chooseDesk(page: Page, wide: boolean, name: string): Promise<void> {
+  if (wide) {
+    // Today stays mounted under Scan with its own dropdown in the same spot; the
+    // screen on top is rendered last.
+    await page.getByLabel(/^Location: /).filter({ visible: true }).last().click();
+    await onScreen(page.getByRole('menuitem', { name: new RegExp(`^${name}`) })).click();
+  } else {
+    await onScreen(page.getByRole('button', { name: new RegExp(`^${name} · `) })).click();
+  }
+}
 
 test.describe('staff', () => {
   test('Hive staff see only Hive locations', async ({ page, wide }) => {
@@ -77,7 +91,16 @@ test.describe('staff', () => {
 
       await page.getByLabel('Sign in as Staff · Hive').click();
       await openSection(page, wide, 'Scan');
-      // Typed in lower case on purpose: the desk normalises it.
+
+      // At the wrong desk (Singapore), the Kuala Lumpur booking is refused.
+      await chooseDesk(page, wide, 'Kallang Works');
+      await expect(onScreen(page.getByText(/^Kallang Works, Singapore ·/))).toBeVisible();
+      await onScreen(page.getByLabel('Booking code')).fill(code);
+      await onScreen(page.getByRole('button', { name: 'Check in with code' })).click();
+      await expect(onScreen(page.getByText(/This booking is at Bangsar Loft/))).toBeVisible();
+
+      // At the right desk it goes through. Typed in lower case: the desk normalises it.
+      await chooseDesk(page, wide, 'Bangsar Loft');
       await onScreen(page.getByLabel('Booking code')).fill(code.toLowerCase());
       await onScreen(page.getByRole('button', { name: 'Check in with code' })).click();
 
