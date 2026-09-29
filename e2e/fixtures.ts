@@ -92,17 +92,25 @@ export async function openSection(page: Page, wide: boolean, name: string): Prom
   }
   const tab = page.getByRole('tab', { name: new RegExp(name) }).filter({ visible: true });
   const back = page.getByRole('link', { name: 'Go back' }).filter({ visible: true });
-  for (let i = 0; i < 5; i++) {
-    // Wait for the screen to settle on either the tabs or a back button.
+  // Look again every round: during a screen transition the old screen's back link
+  // can vanish between seeing it and tapping it, and a tap can be dropped. With
+  // neither on screen, use the browser's back button, as a phone user would.
+  try {
+    // First let the app settle on either one, so a slow first render never goes back.
     await expect(tab.or(back).first()).toBeVisible();
-    if ((await tab.count()) > 0) break;
-    await back.first().click();
+    await expect(async () => {
+      if ((await tab.count()) === 0) {
+        if ((await back.count()) > 0) await back.first().click({ timeout: 1_000 });
+        else await page.goBack();
+      }
+      await tab.first().click({ timeout: 1_000 });
+      await expect(tab.first()).toHaveAttribute('aria-selected', 'true', { timeout: 1_000 });
+    }).toPass({ timeout: 20_000 });
+  } catch (error) {
+    // Show what was on screen, so a CI-only failure can be read from the log.
+    const screen = await page.locator('body').ariaSnapshot();
+    throw new Error(`Could not open the ${name} tab. Screen:\n${screen}`, { cause: error });
   }
-  // A tap during the back animation can be dropped; confirm the tab took it.
-  await expect(async () => {
-    await tab.first().click();
-    await expect(tab.first()).toHaveAttribute('aria-selected', 'true', { timeout: 1_000 });
-  }).toPass();
 }
 
 export async function signOut(page: Page, wide: boolean): Promise<void> {
