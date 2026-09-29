@@ -43,14 +43,36 @@ type TableRowProps = {
   readonly accessibilityLabel: string;
   /** Makes the whole row a link. */
   readonly href?: Href;
-  /** Tints the row, e.g. guests arriving now. */
+  /** Tints the row, e.g. guests arriving now or the row being edited. */
   readonly highlight?: boolean;
+  /** Makes the whole row a button, e.g. to pick the row to edit beside the table. */
+  readonly onPress?: () => void;
 };
 
-export function TableRow({ children, accessibilityLabel, href, highlight = false }: TableRowProps) {
+export function TableRow({
+  children,
+  accessibilityLabel,
+  href,
+  highlight = false,
+  onPress,
+}: TableRowProps) {
   const className = `min-h-touch flex-row items-center gap-4 border-t border-border px-5 py-3 ${
     highlight ? 'bg-primary-soft/50' : ''
   }`;
+  if (onPress) {
+    return (
+      <Pressable
+        role="row"
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ selected: highlight }}
+        onPress={onPress}
+        className={`${className} hover:bg-surface-muted`}
+      >
+        {children}
+      </Pressable>
+    );
+  }
   if (!href) {
     return (
       <View role="row" accessibilityLabel={accessibilityLabel} className={className}>

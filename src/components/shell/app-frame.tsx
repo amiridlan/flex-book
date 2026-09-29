@@ -12,7 +12,7 @@ import { useLayout } from '@/lib/use-layout';
 import { navColor, navPalette, navVars } from '@/theme/nav-palette';
 
 import { BrandLabel, useBackgroundWipe } from './brand-transition';
-import type { NavItem } from './nav-items';
+import { navFor, type NavItem } from './nav-items';
 
 type AppFrameProps = {
   readonly nav: readonly NavItem[];
@@ -81,7 +81,7 @@ function Sidebar({ nav, brand }: { readonly nav: readonly NavItem[]; readonly br
           </View>
 
           <View className="gap-1">
-            {nav.map((item) => {
+            {navFor(nav, user).map((item) => {
               const active = item.matches(pathname);
               return (
                 <Link key={item.label} href={item.href} asChild>

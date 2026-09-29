@@ -15,6 +15,8 @@ import StaffHomeScreen from '@/app/staff/index';
 import StaffProfile from '@/app/staff/profile';
 import StaffScanScreen from '@/app/staff/scan';
 import StaffWalkInScreen from '@/app/staff/walk-in';
+import StaffUsersScreen from '@/app/staff/users';
+import StaffActivityScreen from '@/app/staff/activity';
 
 /** Every app route, for expo-router's `renderRouter` in integration tests. */
 export const ROUTES = {
@@ -35,4 +37,6 @@ export const ROUTES = {
   'staff/profile': StaffProfile,
   'staff/scan': StaffScanScreen,
   'staff/walk-in': StaffWalkInScreen,
+  'staff/users': StaffUsersScreen,
+  'staff/activity': StaffActivityScreen,
 };
