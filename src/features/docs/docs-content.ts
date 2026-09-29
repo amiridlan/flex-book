@@ -3,15 +3,10 @@
  * without touching layout code. Versions mirror package.json and backend/composer.json.
  */
 
-export type DocSectionId =
-  'overview' | 'try-it' | 'stack' | 'architecture' | 'hosting' | 'security' | 'next';
+export type DocSectionId = 'try-it' | 'stack' | 'architecture' | 'hosting' | 'security' | 'next';
 
 export type DocSection = { readonly id: DocSectionId; readonly title: string };
 
-/**
- * The "On this page" list. The opening section ('overview') is left out: it sits at
- * the top of the page, so the list starts with what comes after it.
- */
 export const DOC_SECTIONS: readonly DocSection[] = [
   { id: 'try-it', title: 'Try the demo' },
   { id: 'stack', title: 'Tech stack' },
@@ -21,34 +16,9 @@ export const DOC_SECTIONS: readonly DocSection[] = [
   { id: 'next', title: 'What comes next' },
 ];
 
-export const OVERVIEW =
-  'FlexiSpace is a booking app for a coworking group with three brands (The Common Ground, Hive and Clustered) across Malaysia, Singapore, Hong Kong, Vietnam, Thailand and Australia. Members book desks and rooms at any brand in any country. Front-desk staff see only the brand or location they work for, check members in and add walk-ins. One codebase runs on Android, iOS and the web.';
-
+/** Page footer. */
 export const DISCLAIMER =
   'Not affiliated with Flexi Group. Every person, company and booking in this demo is fictional.';
-
-export const HIGHLIGHTS: readonly { readonly title: string; readonly body: string }[] = [
-  {
-    title: 'One app, three brands',
-    body: 'Members see every brand. Staff see only their own brand or single location; the API enforces this, the screens just follow it.',
-  },
-  {
-    title: 'Six countries, done properly',
-    body: 'Each location shows its own local time (including Australian daylight saving), its own currency and its own sales tax.',
-  },
-  {
-    title: 'No fake bookings',
-    body: 'Same-day bookings need the phone within 30 km; later days need it in the same country; fake-GPS apps are refused. The server checks again.',
-  },
-  {
-    title: 'Front desk on a phone',
-    body: 'Staff get today’s board, QR or code check-in, walk-in bookings, and automatic no-shows 15 minutes after the start.',
-  },
-  {
-    title: 'Backend-ready',
-    body: 'The app talks to a mock of the real API. Switching to the Laravel backend is one setting, not a rewrite.',
-  },
-];
 
 export const DEMO_TIPS: readonly string[] = [
   'Pick any demo account on the sign-in page. No password is needed.',

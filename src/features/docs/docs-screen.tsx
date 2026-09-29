@@ -23,12 +23,10 @@ import {
   DEMO_TIPS,
   DISCLAIMER,
   DOC_SECTIONS,
-  HIGHLIGHTS,
   HOSTING,
   HOSTING_STATUS_LABELS,
   LAYERS,
   NEXT_STEPS,
-  OVERVIEW,
   SECURITY,
   SHARED_RULES,
   STACK,
@@ -64,8 +62,7 @@ export function DocsScreen() {
   // y of each section inside the scroll content, filled by onLayout.
   const offsets = useRef<Partial<Record<DocSectionId, number>>>({});
   const columnTop = useRef(0);
-  // Null while the reader is still in the opening section, which the list leaves out.
-  const [active, setActive] = useState<DocSectionId | null>(null);
+  const [active, setActive] = useState<DocSectionId>('try-it');
   const host = webHost();
 
   function leave() {
@@ -82,7 +79,7 @@ export function DocsScreen() {
 
   function onScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const y = event.nativeEvent.contentOffset.y + SCROLL_MARGIN * 2;
-    let current: DocSectionId | null = null;
+    let current: DocSectionId = 'try-it';
     for (const { id } of DOC_SECTIONS) {
       const top = offsets.current[id];
       if (top !== undefined && columnTop.current + top <= y) current = id;
@@ -101,21 +98,6 @@ export function DocsScreen() {
         columnTop.current = event.nativeEvent.layout.y;
       }}
     >
-      <Section id="overview" title="About this demo" onMeasure={measure} lead>
-        <Text className="text-[15px] leading-6 text-text">{OVERVIEW}</Text>
-        <View className="-m-1.5 flex-row flex-wrap">
-          {HIGHLIGHTS.map((item) => (
-            <View key={item.title} className="w-full p-1.5 md:w-1/2">
-              <View className="h-full gap-1 rounded-xl border border-border bg-surface p-4">
-                <Text className="text-[15px] font-semibold text-text">{item.title}</Text>
-                <Text className="text-sm leading-5 text-text-muted">{item.body}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-        <Note>{DISCLAIMER}</Note>
-      </Section>
-
       <Section id="try-it" title="Try the demo" onMeasure={measure}>
         <Rows>
           {DEMO_ACCOUNTS.map((account, index) => (
@@ -222,6 +204,8 @@ export function DocsScreen() {
       <Section id="next" title="What comes next" onMeasure={measure}>
         <Bullets items={NEXT_STEPS} />
       </Section>
+
+      <Note>{DISCLAIMER}</Note>
     </View>
   );
 
@@ -307,14 +291,11 @@ export function DocsScreen() {
 function Section({
   id,
   title,
-  lead = false,
   onMeasure,
   children,
 }: {
   readonly id: DocSectionId;
   readonly title: string;
-  /** The first section's title doubles as the page title. */
-  readonly lead?: boolean;
   /** Reports the section's y so the contents list can scroll to it. */
   readonly onMeasure: (id: DocSectionId, y: number) => void;
   readonly children: ReactNode;
@@ -325,14 +306,7 @@ function Section({
       onLayout={(event: LayoutChangeEvent) => onMeasure(id, event.nativeEvent.layout.y)}
       className="gap-4"
     >
-      <Text
-        accessibilityRole="header"
-        className={
-          lead
-            ? 'text-2xl font-bold text-text lg:text-[28px] lg:leading-9'
-            : 'text-xl font-semibold text-text'
-        }
-      >
+      <Text accessibilityRole="header" className="text-xl font-semibold text-text">
         {title}
       </Text>
       {children}

@@ -70,7 +70,7 @@ describe('desktop layout', () => {
     await renderRouter(ROUTES, { initialUrl: '/docs' });
 
     expect(await screen.findByLabelText('On this page')).toBeTruthy();
-    expect(screen.getByText('About this demo')).toBeTruthy();
+    expect(screen.getByText(/Not affiliated with Flexi Group/)).toBeTruthy();
     await fireEvent.press(screen.getByText('Sign in'));
     expect(await screen.findByText('Choose a demo account')).toBeTruthy();
   });
