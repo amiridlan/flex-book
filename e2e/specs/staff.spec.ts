@@ -17,7 +17,11 @@ async function chooseDesk(page: Page, wide: boolean, name: string): Promise<void
   if (wide) {
     // Today stays mounted under Scan with its own dropdown in the same spot; the
     // screen on top is rendered last.
-    await page.getByLabel(/^Location: /).filter({ visible: true }).last().click();
+    await page
+      .getByLabel(/^Location: /)
+      .filter({ visible: true })
+      .last()
+      .click();
     await onScreen(page.getByRole('menuitem', { name: new RegExp(`^${name}`) })).click();
   } else {
     await onScreen(page.getByRole('button', { name: new RegExp(`^${name} · `) })).click();
