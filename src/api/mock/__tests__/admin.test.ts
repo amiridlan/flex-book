@@ -269,4 +269,66 @@ describe('super admin API', () => {
       admin.overrideBooking(target!.id, { action: 'cancel', reason: 'Not allowed' }),
     ).rejects.toMatchObject({ kind: 'forbidden' });
   });
+
+  it('closes a location: members stop seeing it and cannot book; staff still can see it', async () => {
+    const { as, admin, locations, bookings } = await setup();
+    await as(SUPER);
+    await admin.updateLocation('loc_hive_kul', { closed: true, reason: 'Aircon repair' });
+
+    await as('aisyah@example.com');
+    const listed = (await locations.list({ country: 'MY' })).data.map((l) => l.id);
+    expect(listed).not.toContain('loc_hive_kul');
+    await expect(locations.get('loc_hive_kul')).rejects.toMatchObject({ kind: 'not_found' });
+    await expect(
+      bookings.create({
+        spaceId: 'loc_hive_kul__room-s',
+        startsAt: '2030-01-07T02:00:00.000Z',
+        endsAt: '2030-01-07T03:00:00.000Z',
+        device: { lat: 3.13, lng: 101.67, mocked: false },
+      }),
+    ).rejects.toMatchObject({ fieldErrors: { spaceId: [expect.stringContaining('closed')] } });
+
+    await as(DANIEL);
+    await expect(locations.get('loc_hive_kul')).resolves.toMatchObject({ name: 'Bangsar Loft' });
+
+    await as(SUPER);
+    expect((await admin.auditTrail())[0]).toMatchObject({
+      action: 'location.closed',
+      target: { label: 'Bangsar Loft' },
+      reason: 'Aircon repair',
+    });
+  });
+
+  it('closes one space and changes the booking rules, both logged', async () => {
+    const { as, admin, locations } = await setup();
+    await as(SUPER);
+    await admin.updateSpace('loc_hive_kul__room-l', { closed: true, reason: 'New projector' });
+    const view = await admin.updateLocation('loc_hive_kul', {
+      bookingRules: { sameDayRadiusKm: 3, checkInRadiusM: 150 },
+      reason: 'Pilot a tighter radius',
+    });
+    expect(view.bookingRules).toEqual({ sameDayRadiusKm: 3, checkInRadiusM: 150 });
+    await expect(
+      admin.updateLocation('loc_hive_kul', {
+        bookingRules: { sameDayRadiusKm: 3, checkInRadiusM: 10 },
+        reason: 'Too tight',
+      }),
+    ).rejects.toMatchObject({ kind: 'validation' });
+
+    await as('aisyah@example.com');
+    const bangsar = await locations.get('loc_hive_kul');
+    expect(bangsar.spaces.map((sp) => sp.id)).not.toContain('loc_hive_kul__room-l');
+    expect(bangsar.bookingRules.sameDayRadiusKm).toBe(3);
+
+    await as(SUPER);
+    const [rules, space] = await admin.auditTrail();
+    expect(rules).toMatchObject({
+      action: 'rules.updated',
+      changes: [
+        { field: 'same-day radius', from: '30 km', to: '3 km' },
+        { field: 'check-in radius', from: '200 m', to: '150 m' },
+      ],
+    });
+    expect(space).toMatchObject({ action: 'space.closed', reason: 'New projector' });
+  });
 });

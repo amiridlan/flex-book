@@ -31,6 +31,41 @@ export const overrideBookingSchema = z.object({
 });
 export type OverrideBookingInput = z.infer<typeof overrideBookingSchema>;
 
+const bookingRulesSchema = z.object({
+  sameDayRadiusKm: z.number().min(1, 'Use at least 1 km.').max(200, 'Use 200 km or less.'),
+  checkInRadiusM: z
+    .number()
+    .int('Use whole metres.')
+    .min(50, 'Use at least 50 m: GPS is rarely more precise.')
+    .max(2000, 'Use 2,000 m or less.'),
+});
+
+/** A location as the super admin manages it: open or closed, its spaces, its rules. */
+export const locationSettingsSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  city: z.string(),
+  brandId: z.string(),
+  closed: z.boolean(),
+  closedReason: z.string().nullable(),
+  bookingRules: bookingRulesSchema,
+  spaces: z.array(z.object({ id: z.string(), name: z.string(), closed: z.boolean() })),
+});
+export type LocationSettingsView = z.infer<typeof locationSettingsSchema>;
+
+export const updateLocationSettingsSchema = z.object({
+  closed: z.boolean().optional(),
+  bookingRules: bookingRulesSchema.optional(),
+  reason: z.string().trim().min(3, 'Say why, for the activity log.').max(200),
+});
+export type UpdateLocationSettingsInput = z.infer<typeof updateLocationSettingsSchema>;
+
+export const updateSpaceSettingsSchema = z.object({
+  closed: z.boolean(),
+  reason: z.string().trim().min(3, 'Say why, for the activity log.').max(200),
+});
+export type UpdateSpaceSettingsInput = z.infer<typeof updateSpaceSettingsSchema>;
+
 /** Roles a super admin can invite. Members sign up themselves. */
 export const invitableRoleSchema = z.enum(['staff', 'brand_admin', 'group_admin', 'super_admin']);
 

@@ -26,6 +26,7 @@ import type { Location, Space } from '../schemas/location';
 import type { User } from '../schemas/user';
 import { canSeeLocation } from './access';
 import { buildAvailability } from './availability';
+import { createLocationSettings, type LocationSettings } from './location-settings';
 import { COUNTRIES } from './db/countries';
 import { LOCATIONS } from './db/locations';
 import { SPACES } from './db/spaces';
@@ -88,7 +89,11 @@ const ABUSE_WORDS: Readonly<Record<string, string>> = {
   wrong_country: 'From another country',
 };
 
-export function createBookingStore(random: () => number, now: () => number) {
+export function createBookingStore(
+  random: () => number,
+  now: () => number,
+  settings: LocationSettings = createLocationSettings(),
+) {
   const bookings = new Map<string, StoredBooking>();
   const blocked: BlockedAttempt[] = [];
   let sequence = 0;
@@ -351,8 +356,10 @@ export function createBookingStore(random: () => number, now: () => number) {
 
     create(user: User, input: CreateBookingInput): HttpResponse {
       const space = SPACES.find((s) => s.id === input.spaceId);
-      const location = LOCATIONS.find((l) => l.id === space?.locationId);
+      const location = settings.location(space?.locationId);
       if (!space || !location) return validationError({ spaceId: ['This space does not exist.'] });
+      const closure = settings.closure(location.id, space.id);
+      if (closure) return validationError({ spaceId: [closure] });
 
       // 1. Anti-fake-booking rule, enforced here regardless of what the app checked.
       const date = formatInZone(input.startsAt, location.timezone, 'yyyy-MM-dd');
@@ -440,7 +447,7 @@ export function createBookingStore(random: () => number, now: () => number) {
       device: { lat: number; lng: number; mocked: boolean } | null,
     ): HttpResponse {
       const booking = bookings.get(id);
-      const location = LOCATIONS.find((l) => l.id === booking?.location.id);
+      const location = settings.location(booking?.location.id);
       if (!booking || !location || booking.userId !== user.id) {
         return json(404, { message: 'Booking not found.' });
       }
@@ -569,10 +576,12 @@ export function createBookingStore(random: () => number, now: () => number) {
     /** Walk-in: staff book a free slot today for a guest on site, checked in immediately. */
     walkIn(user: User, input: WalkInInput): HttpResponse {
       const space = SPACES.find((s) => s.id === input.spaceId);
-      const location = LOCATIONS.find((l) => l.id === space?.locationId);
+      const location = settings.location(space?.locationId);
       if (!space || !location || !canSeeLocation(user, location)) {
         return validationError({ spaceId: ['Choose a space at your location.'] });
       }
+      const closure = settings.closure(location.id, space.id);
+      if (closure) return validationError({ spaceId: [closure] });
       const today = todayIn(location.timezone, now());
       if (formatInZone(input.startsAt, location.timezone, 'yyyy-MM-dd') !== today) {
         return validationError({ startsAt: ['Walk-ins can only be booked for today.'] });

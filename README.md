@@ -43,6 +43,7 @@ Shared rules (src/domain): distance rule, cancellation, check-in window, QR payl
 | Staff · The Common Ground KL (Priya) | One location only                            |
 | Brand admin · Clustered (Minh)       | Every Clustered location                     |
 | Group admin (Sarah)                  | All brands                                   |
+| Super admin (Farid)                  | People and access, activity log, locations   |
 
 Profile → **Demo location** lets the presenter "be" in Sydney, on site, or on a fake-GPS app, to show the distance rule live.
 

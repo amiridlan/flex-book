@@ -65,6 +65,13 @@ export const STAFF_NAV: readonly NavItem[] = [
     permission: 'users.manage',
   },
   {
+    label: 'Locations',
+    href: '/staff/locations',
+    icon: 'business-outline',
+    matches: (p) => p.startsWith('/staff/locations'),
+    permission: 'locations.manage',
+  },
+  {
     label: 'Activity',
     href: '/staff/activity',
     icon: 'document-text-outline',

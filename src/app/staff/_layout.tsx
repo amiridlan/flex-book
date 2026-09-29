@@ -39,6 +39,14 @@ export default function StaffTabsLayout() {
           }}
         />
         <Tabs.Screen
+          name="locations"
+          options={{
+            title: 'Locations',
+            tabBarIcon: tabIcon('business-outline'),
+            href: hasPermission(user, 'locations.manage') ? undefined : null,
+          }}
+        />
+        <Tabs.Screen
           name="activity"
           options={{
             title: 'Activity',

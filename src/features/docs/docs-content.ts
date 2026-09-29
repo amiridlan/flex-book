@@ -284,6 +284,7 @@ export const SECURITY: readonly string[] = [
   'Sign-in is demo only. The real build uses Laravel Sanctum tokens kept in the phone’s secure storage, never plain storage.',
   'The app’s distance check is only for a fast answer; the server re-checks every booking and check-in.',
   'Front-desk check-in only accepts bookings for the desk’s own location, so staff at one site cannot mark a guest as arrived somewhere else.',
+  'Super admins manage people and access. Every admin action (access changes, suspensions, invites, booking overrides, closures and rule changes) writes a structured audit entry: who, what, before and after, and a required reason.',
   'Staff see member emails masked (a***@example.com). Nothing sensitive is collected, in line with Malaysia’s PDPA 2010.',
   'No secrets, API keys or tokens are stored in the app or the repo.',
   'The web version sends strict security headers (no framing, no MIME sniffing, location and camera for this site only).',

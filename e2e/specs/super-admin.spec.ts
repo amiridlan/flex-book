@@ -96,6 +96,25 @@ test.describe('super admin', () => {
     await expect(onScreen(page.getByText('Guest arrived; the scanner was down'))).toBeVisible();
   });
 
+  test('closes a location for a while; members stop seeing it', async ({ page, wide }) => {
+    await signIn(page, 'superAdmin');
+    await openSection(page, wide, 'Locations');
+    await onScreen(page.getByLabel('Bangsar Loft, Kuala Lumpur', { exact: true })).click();
+    await onScreen(page.getByRole('button', { name: 'Temporarily closed' })).click();
+    await onScreen(page.getByLabel('Reason for the change')).fill('Aircon repair');
+    await onScreen(page.getByRole('button', { name: 'Save changes' })).click();
+    await expect(onScreen(page.getByText('Saved, and logged in Activity.'))).toBeVisible();
+
+    if (!wide) await onScreen(page.getByRole('button', { name: 'Back to locations' })).click();
+    await openSection(page, wide, 'Activity');
+    await expect(onScreen(page.getByText('Closed location · Bangsar Loft'))).toBeVisible();
+
+    await signOut(page, wide);
+    await page.getByLabel('Sign in as Member').click();
+    await expect(onScreen(page.getByText('Menara Aurora', { exact: true }))).toBeVisible();
+    await expect(page.getByLabel(/^Bangsar Loft/)).toHaveCount(0);
+  });
+
   test('other roles never see the admin screens', async ({ page, wide }) => {
     await signIn(page, 'hiveStaff');
     await expect(onScreen(page.getByText(/^Today · Bangsar Loft/))).toBeVisible();

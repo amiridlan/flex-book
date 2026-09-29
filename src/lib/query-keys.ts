@@ -21,6 +21,7 @@ export const queryKeys = {
     users: ['admin', 'users'] as const,
     audit: ['admin', 'audit'] as const,
     flags: ['admin', 'flags'] as const,
+    locations: ['admin', 'locations'] as const,
   },
   staff: {
     all: ['staff'] as const,

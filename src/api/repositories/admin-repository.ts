@@ -5,11 +5,15 @@ import {
   adminUserSchema,
   auditEventSchema,
   flaggedMemberSchema,
+  locationSettingsSchema,
   type AdminUser,
   type AuditEvent,
   type FlaggedMember,
   type InviteStaffInput,
+  type LocationSettingsView,
   type OverrideBookingInput,
+  type UpdateLocationSettingsInput,
+  type UpdateSpaceSettingsInput,
   type UpdateAccessInput,
   type UpdateStatusInput,
 } from '../schemas/admin';
@@ -24,6 +28,9 @@ export type AdminRepository = {
   auditTrail(): Promise<readonly AuditEvent[]>;
   flagged(): Promise<readonly FlaggedMember[]>;
   overrideBooking(bookingId: string, input: OverrideBookingInput): Promise<StaffBooking>;
+  locationSettings(): Promise<readonly LocationSettingsView[]>;
+  updateLocation(id: string, input: UpdateLocationSettingsInput): Promise<LocationSettingsView>;
+  updateSpace(id: string, input: UpdateSpaceSettingsInput): Promise<LocationSettingsView>;
 };
 
 /** Super admin endpoints. The server checks the permission on every call. */
@@ -65,6 +72,35 @@ export function createAdminRepository(api: ApiClient): AdminRepository {
           'POST',
           `/admin/bookings/${encodeURIComponent(bookingId)}/override`,
           resourceSchema(staffBookingSchema),
+          { body: input },
+        )
+      ).data;
+    },
+    async locationSettings() {
+      return (
+        await api.request(
+          'GET',
+          '/admin/locations',
+          z.object({ data: z.array(locationSettingsSchema) }),
+        )
+      ).data;
+    },
+    async updateLocation(id, input) {
+      return (
+        await api.request(
+          'PATCH',
+          `/admin/locations/${encodeURIComponent(id)}`,
+          resourceSchema(locationSettingsSchema),
+          { body: input },
+        )
+      ).data;
+    },
+    async updateSpace(id, input) {
+      return (
+        await api.request(
+          'PATCH',
+          `/admin/spaces/${encodeURIComponent(id)}`,
+          resourceSchema(locationSettingsSchema),
           { body: input },
         )
       ).data;

@@ -5,6 +5,8 @@ import {
   inviteStaffSchema,
   overrideBookingSchema,
   updateAccessSchema,
+  updateLocationSettingsSchema,
+  updateSpaceSettingsSchema,
   updateStatusSchema,
 } from '../schemas/admin';
 import {
@@ -19,6 +21,7 @@ import { canSeeLocation } from './access';
 import { createAdminStore } from './admin-store';
 import { buildAvailability } from './availability';
 import { createBookingStore } from './booking-store';
+import { createLocationSettings } from './location-settings';
 import { BRANDS } from './db/brands';
 import { COUNTRIES } from './db/countries';
 import { LOCATIONS } from './db/locations';
@@ -63,7 +66,8 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
   const now = options.now ?? Date.now;
   const sessions = new Map<string, string>(); // token -> user id
   const router = createRouter();
-  const bookings = createBookingStore(random, now);
+  const settings = createLocationSettings();
+  const bookings = createBookingStore(random, now, settings);
   bookings.seed(
     USERS.find((u) => u.role === 'member'),
     USERS,
@@ -145,12 +149,17 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       const query = listQuerySchema.safeParse(request.query ?? {});
       if (!query.success) return validationError({ query: ['Invalid filters.'] });
       const { country, brand, page, per_page } = query.data;
-      const visible = LOCATIONS.filter(
-        (l) =>
-          canSeeLocation(user, l) &&
-          (!country || l.countryCode === country) &&
-          (!brand || l.brandId === brand),
-      );
+      // Members don't see temporarily closed locations; staff still do.
+      const staff = user.permissions.includes('staff.dashboard');
+      const visible = settings
+        .allLocations()
+        .filter(
+          (l) =>
+            canSeeLocation(user, l) &&
+            (staff || !settings.isLocationClosed(l.id)) &&
+            (!country || l.countryCode === country) &&
+            (!brand || l.brandId === brand),
+        );
       return json(200, paginate(visible, page, per_page, '/locations'));
     }),
   );
@@ -159,12 +168,18 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
     'GET',
     '/locations/:id',
     authed((user, _request, params) => {
-      const location = LOCATIONS.find((l) => l.id === params.id);
+      const location = settings.location(params.id);
+      const staff = user.permissions.includes('staff.dashboard');
       // Out-of-scope returns 404, not 403, so staff cannot probe for other brands' locations.
       if (!location || !canSeeLocation(user, location)) {
         return json(404, { message: 'Location not found.' });
       }
-      const spaces = SPACES.filter((s) => s.locationId === location.id);
+      if (!staff && settings.isLocationClosed(location.id)) {
+        return json(404, { message: 'This location is temporarily closed.' });
+      }
+      const spaces = SPACES.filter(
+        (s) => s.locationId === location.id && (staff || !settings.isSpaceClosed(s.id)),
+      );
       return json(200, { data: { ...location, spaces } });
     }),
   );
@@ -174,7 +189,7 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
     '/spaces/:id/availability',
     authed((user, request, params) => {
       const space = SPACES.find((s) => s.id === params.id);
-      const location = LOCATIONS.find((l) => l.id === space?.locationId);
+      const location = settings.location(space?.locationId);
       if (!space || !location || !canSeeLocation(user, location)) {
         return json(404, { message: 'Space not found.' });
       }
@@ -357,6 +372,107 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
         });
       }
       return result.response;
+    }),
+  );
+
+  function settingsView(id: string) {
+    const location = settings.location(id);
+    if (!location) return null;
+    return {
+      id: location.id,
+      name: location.name,
+      city: location.city,
+      brandId: location.brandId,
+      closed: settings.isLocationClosed(location.id),
+      closedReason: settings.closedReason(location.id),
+      bookingRules: location.bookingRules,
+      spaces: settings
+        .spacesOf(location.id)
+        .map((sp) => ({ id: sp.id, name: sp.name, closed: settings.isSpaceClosed(sp.id) })),
+    };
+  }
+
+  router.on(
+    'GET',
+    '/admin/locations',
+    adminOnly('locations.manage', () =>
+      json(200, { data: LOCATIONS.map((l) => settingsView(l.id)) }),
+    ),
+  );
+
+  router.on(
+    'PATCH',
+    '/admin/locations/:id',
+    adminOnly('locations.manage', (user, request, params) => {
+      const body = updateLocationSettingsSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      const location = settings.location(params.id);
+      if (!location) return json(404, { message: 'Location not found.' });
+      const { closed, bookingRules, reason } = body.data;
+      const target = { type: 'location' as const, id: location.id, label: location.name };
+      if (closed !== undefined && closed !== settings.isLocationClosed(location.id)) {
+        settings.setLocationClosed(location.id, closed, reason);
+        admin.record(user, {
+          action: closed ? 'location.closed' : 'location.reopened',
+          target,
+          changes: [
+            { field: 'status', from: closed ? 'open' : 'closed', to: closed ? 'closed' : 'open' },
+          ],
+          reason,
+        });
+      }
+      if (bookingRules) {
+        const before = location.bookingRules;
+        const changes = [
+          before.sameDayRadiusKm !== bookingRules.sameDayRadiusKm
+            ? {
+                field: 'same-day radius',
+                from: `${before.sameDayRadiusKm} km`,
+                to: `${bookingRules.sameDayRadiusKm} km`,
+              }
+            : null,
+          before.checkInRadiusM !== bookingRules.checkInRadiusM
+            ? {
+                field: 'check-in radius',
+                from: `${before.checkInRadiusM} m`,
+                to: `${bookingRules.checkInRadiusM} m`,
+              }
+            : null,
+        ].filter((c) => c !== null);
+        if (changes.length > 0) {
+          settings.setRules(location.id, bookingRules);
+          admin.record(user, { action: 'rules.updated', target, changes, reason });
+        }
+      }
+      return json(200, { data: settingsView(location.id) });
+    }),
+  );
+
+  router.on(
+    'PATCH',
+    '/admin/spaces/:id',
+    adminOnly('locations.manage', (user, request, params) => {
+      const body = updateSpaceSettingsSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      const space = SPACES.find((sp) => sp.id === params.id);
+      const location = settings.location(space?.locationId);
+      if (!space || !location) return json(404, { message: 'Space not found.' });
+      if (body.data.closed !== settings.isSpaceClosed(space.id)) {
+        settings.setSpaceClosed(space.id, body.data.closed, body.data.reason);
+        admin.record(user, {
+          action: body.data.closed ? 'space.closed' : 'space.reopened',
+          target: { type: 'space', id: space.id, label: `${space.name} · ${location.name}` },
+          changes: [
+            {
+              field: 'status',
+              from: body.data.closed ? 'open' : 'closed',
+              to: body.data.closed ? 'closed' : 'open',
+            },
+          ],
+          reason: body.data.reason,
+        });
+      }
+      return json(200, { data: settingsView(location.id) });
     }),
   );
 
