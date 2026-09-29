@@ -19,6 +19,7 @@ export const ACCOUNTS = {
   member: 'Sign in as Member',
   hiveStaff: 'Sign in as Staff · Hive',
   tcgStaff: 'Sign in as Staff · The Common Ground KL',
+  superAdmin: 'Sign in as Super admin',
 } as const;
 
 type Fixtures = {
