@@ -132,6 +132,14 @@ const SEED_USERS: readonly SeedUser[] = [
     role: 'member',
     assignments: [],
   },
+  {
+    // Suspended in the demo (see the mock admin store), to show what that looks like.
+    id: 'usr_member_suspended',
+    name: 'Ryan Ong',
+    email: 'ryan@example.com',
+    role: 'member',
+    assignments: [],
+  },
 ];
 
 export const USERS: readonly User[] = SEED_USERS.map((user) => ({

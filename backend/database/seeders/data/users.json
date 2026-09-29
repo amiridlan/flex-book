@@ -132,5 +132,12 @@
     "email": "olivia@example.com",
     "role": "member",
     "assignments": []
+  },
+  {
+    "id": "usr_member_suspended",
+    "name": "Ryan Ong",
+    "email": "ryan@example.com",
+    "role": "member",
+    "assignments": []
   }
 ]

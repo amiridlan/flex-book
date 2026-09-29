@@ -17,6 +17,24 @@ export const updateAccessSchema = z.object({
 });
 export type UpdateAccessInput = z.infer<typeof updateAccessSchema>;
 
+/** Suspend or reactivate an account. The reason goes into the audit trail. */
+export const updateStatusSchema = z.object({
+  status: accountStatusSchema,
+  reason: z.string().trim().min(3, 'Say why, for the activity log.').max(200),
+});
+export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
+
+/** Roles a super admin can invite. Members sign up themselves. */
+export const invitableRoleSchema = z.enum(['staff', 'brand_admin', 'group_admin', 'super_admin']);
+
+export const inviteStaffSchema = z.object({
+  name: z.string().trim().min(2, 'Enter their full name.').max(80, 'Name is too long.'),
+  email: z.email('Enter a valid email address.'),
+  role: invitableRoleSchema,
+  assignments: z.array(assignmentSchema),
+});
+export type InviteStaffInput = z.infer<typeof inviteStaffSchema>;
+
 export const auditActionSchema = z.enum([
   'access.updated',
   'account.suspended',

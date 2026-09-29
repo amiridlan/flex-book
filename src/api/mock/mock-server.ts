@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { HttpRequest, HttpResponse, HttpTransport } from '../client/transport';
-import { updateAccessSchema } from '../schemas/admin';
+import { inviteStaffSchema, updateAccessSchema, updateStatusSchema } from '../schemas/admin';
 import {
   checkInSchema,
   createBookingSchema,
@@ -94,9 +94,12 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
     const body = loginBodySchema.safeParse(request.body);
     if (!body.success) return validationError(fieldErrors(body.error.issues));
     const account = admin.findByEmail(body.data.email);
-    const user = account ? admin.findById(account.id) : null;
-    if (!user || body.data.password !== DEMO_PASSWORD) {
+    if (!account || body.data.password !== DEMO_PASSWORD) {
       return validationError({ email: ['These credentials do not match our records.'] });
+    }
+    const user = admin.findById(account.id);
+    if (!user) {
+      return validationError({ email: ['This account is suspended. Contact support.'] });
     }
     const token = `mock_${Math.floor(random() * 1e12).toString(36)}_${sessions.size}`;
     sessions.set(token, user.id);
@@ -296,6 +299,26 @@ export function createMockServer(options: MockServerOptions): HttpTransport {
       const body = updateAccessSchema.safeParse(request.body);
       if (!body.success) return validationError(fieldErrors(body.error.issues));
       return admin.updateAccess(user, params.id ?? '', body.data);
+    }),
+  );
+
+  router.on(
+    'PATCH',
+    '/admin/users/:id/status',
+    adminOnly('users.manage', (user, request, params) => {
+      const body = updateStatusSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      return admin.setStatus(user, params.id ?? '', body.data);
+    }),
+  );
+
+  router.on(
+    'POST',
+    '/admin/users',
+    adminOnly('users.manage', (user, request) => {
+      const body = inviteStaffSchema.safeParse(request.body);
+      if (!body.success) return validationError(fieldErrors(body.error.issues));
+      return admin.invite(user, body.data);
     }),
   );
 

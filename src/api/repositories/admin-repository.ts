@@ -6,13 +6,17 @@ import {
   auditEventSchema,
   type AdminUser,
   type AuditEvent,
+  type InviteStaffInput,
   type UpdateAccessInput,
+  type UpdateStatusInput,
 } from '../schemas/admin';
 import { resourceSchema } from '../schemas/common';
 
 export type AdminRepository = {
   users(): Promise<readonly AdminUser[]>;
   updateAccess(userId: string, input: UpdateAccessInput): Promise<AdminUser>;
+  setStatus(userId: string, input: UpdateStatusInput): Promise<AdminUser>;
+  invite(input: InviteStaffInput): Promise<AdminUser>;
   auditTrail(): Promise<readonly AuditEvent[]>;
 };
 
@@ -32,6 +36,21 @@ export function createAdminRepository(api: ApiClient): AdminRepository {
           resourceSchema(adminUserSchema),
           { body: input },
         )
+      ).data;
+    },
+    async setStatus(userId, input) {
+      return (
+        await api.request(
+          'PATCH',
+          `/admin/users/${encodeURIComponent(userId)}/status`,
+          resourceSchema(adminUserSchema),
+          { body: input },
+        )
+      ).data;
+    },
+    async invite(input) {
+      return (
+        await api.request('POST', '/admin/users', resourceSchema(adminUserSchema), { body: input })
       ).data;
     },
     async auditTrail() {

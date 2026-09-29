@@ -35,7 +35,7 @@ describe('super admin API', () => {
     const users = await admin.users();
     expect(users[0]?.role).toBe('super_admin');
     expect(users.length).toBeGreaterThanOrEqual(13);
-    expect(users.every((u) => u.status === 'active')).toBe(true);
+    expect(users.filter((u) => u.status === 'suspended').map((u) => u.name)).toEqual(['Ryan Ong']);
 
     await as('sarah.group@example.com');
     await expect(admin.users()).rejects.toMatchObject({ kind: 'forbidden' });
@@ -131,5 +131,66 @@ describe('super admin API', () => {
         },
       ],
     });
+  });
+
+  it('suspends an account: signed out now, refused at sign-in, back after reactivation', async () => {
+    const { as, admin, locations } = await setup();
+    await as(DANIEL);
+    await expect(locations.list({})).resolves.toBeTruthy();
+
+    await as(SUPER);
+    const daniel = await idOf(admin, DANIEL);
+    await admin.setStatus(daniel, { status: 'suspended', reason: 'Left the company' });
+
+    await as(DANIEL);
+    await expect(locations.list({})).rejects.toMatchObject({ kind: 'unauthorized' });
+
+    await as(SUPER);
+    await admin.setStatus(daniel, { status: 'active', reason: 'Rehired' });
+    const [latest, earlier] = await admin.auditTrail();
+    expect(latest).toMatchObject({ action: 'account.reactivated', reason: 'Rehired' });
+    expect(earlier).toMatchObject({ action: 'account.suspended', reason: 'Left the company' });
+  });
+
+  it('refuses sign-in to the seeded suspended member and needs a reason', async () => {
+    const { as, admin } = await setup();
+    await expect(as('ryan@example.com')).rejects.toMatchObject({
+      fieldErrors: { email: [expect.stringContaining('suspended')] },
+    });
+
+    await as(SUPER);
+    const self = await idOf(admin, SUPER);
+    await expect(
+      admin.setStatus(self, { status: 'suspended', reason: 'Testing' }),
+    ).rejects.toMatchObject({ fieldErrors: { status: [expect.stringContaining('your own')] } });
+    await expect(
+      admin.setStatus(await idOf(admin, PRIYA), { status: 'suspended', reason: '' }),
+    ).rejects.toMatchObject({ kind: 'validation' });
+  });
+
+  it('invites new staff with their access, once per email', async () => {
+    const { as, admin } = await setup();
+    await as(SUPER);
+    const invited = await admin.invite({
+      name: 'Aina Karim',
+      email: 'Aina.Karim@example.com',
+      role: 'staff',
+      assignments: [{ brandId: 'clustered', locationId: 'loc_clustered_pen' }],
+    });
+    expect(invited).toMatchObject({ email: 'aina.karim@example.com', status: 'active' });
+    expect((await admin.users()).some((u) => u.id === invited.id)).toBe(true);
+    expect((await admin.auditTrail())[0]).toMatchObject({
+      action: 'staff.invited',
+      target: { label: 'Aina Karim' },
+    });
+
+    await expect(
+      admin.invite({
+        name: 'Someone Else',
+        email: 'aina.karim@example.com',
+        role: 'staff',
+        assignments: [{ brandId: 'hive', locationId: null }],
+      }),
+    ).rejects.toMatchObject({ fieldErrors: { email: [expect.stringContaining('already')] } });
   });
 });

@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
-import { adminUserSchema, auditEventSchema, updateAccessSchema } from './schemas/admin';
+import {
+  adminUserSchema,
+  auditEventSchema,
+  inviteStaffSchema,
+  updateAccessSchema,
+  updateStatusSchema,
+} from './schemas/admin';
 import { availabilitySchema } from './schemas/availability';
 import {
   bookingSchema,
@@ -33,6 +39,8 @@ const COMPONENTS = {
   AdminUser: adminUserSchema,
   AuditEvent: auditEventSchema,
   UpdateAccessRequest: updateAccessSchema,
+  UpdateStatusRequest: updateStatusSchema,
+  InviteStaffRequest: inviteStaffSchema,
   CreateBookingRequest: createBookingSchema,
   CheckInRequest: checkInSchema,
   StaffCheckInRequest: staffCheckInSchema,
@@ -247,6 +255,27 @@ const ENDPOINTS: readonly Endpoint[] = [
     body: 'UpdateAccessRequest',
     data: 'AdminUser',
     errors: [401, 403, 404, 422],
+  },
+  {
+    method: 'patch',
+    path: '/admin/users/{id}/status',
+    operationId: 'updateUserStatus',
+    summary: 'Suspend or reactivate an account, with a reason (super admin)',
+    tag: 'Admin',
+    body: 'UpdateStatusRequest',
+    data: 'AdminUser',
+    errors: [401, 403, 404, 422],
+  },
+  {
+    method: 'post',
+    path: '/admin/users',
+    operationId: 'inviteStaff',
+    summary: 'Create a staff account with a role and access (super admin)',
+    tag: 'Admin',
+    body: 'InviteStaffRequest',
+    data: 'AdminUser',
+    status: 201,
+    errors: [401, 403, 422],
   },
   {
     method: 'get',
